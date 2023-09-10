@@ -1,5 +1,7 @@
 package com.example.safecircle
 
+import android.util.Log
+import android.widget.Toast
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -21,6 +23,7 @@ import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.ClickableText
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -29,6 +32,7 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -55,13 +59,16 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import com.example.safecircle.ui.theme.CyanSecondary
 import com.example.safecircle.ui.theme.YellowPrimary
+import com.google.firebase.database.DatabaseReference
+import com.google.firebase.database.FirebaseDatabase
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun RegisterScreen(navController: NavHostController) {
+    var familyID by remember { mutableStateOf("") }
     var username by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
-    var selectedRole by remember { mutableStateOf("Parent") }
+    var showDialog by remember { mutableStateOf(false) }
 
     Box(modifier = Modifier.fillMaxSize()) {
         // Drawing the background
@@ -89,6 +96,22 @@ fun RegisterScreen(navController: NavHostController) {
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.SpaceEvenly
             ) {
+                // FamilyID Row
+                Row(
+                    modifier = Modifier.padding(16.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(text = "Family ID:", fontWeight = FontWeight.Bold)
+                    Spacer(modifier = Modifier.width(8.dp))
+                    OutlinedTextField(
+                        value = familyID,
+                        onValueChange = { familyID = it },
+                        placeholder = { Text("Enter family ID") },
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(24.dp),
+                        singleLine = true
+                    )
+                }
                 // Username Row
                 Row(
                     modifier = Modifier.padding(16.dp),
@@ -124,37 +147,22 @@ fun RegisterScreen(navController: NavHostController) {
                     )
                 }
 
-                // Role Row
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(16.dp),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Text(text = "Select Your Role: ", fontWeight = FontWeight.Bold)
-                    Button(
-                        onClick = { selectedRole = "Parent" },
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = if (selectedRole == "Parent") CyanSecondary else Color.Gray
-                        )
-                    ) {
-                        Text(text = "Parent", fontWeight = FontWeight.Bold)
-                    }
-
-                    Button(
-                        onClick = { selectedRole = "Child" },
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = if (selectedRole == "Child") CyanSecondary else Color.Gray
-                        )
-                    ) {
-                        Text(text = "Child", fontWeight = FontWeight.Bold)
-                    }
-                }
-
                 // Register Button
                 Button(
-                    onClick = { navController.navigate(Landing.route) },
+                    onClick = {
+                        val familyDatabase = FamilyDatabase()
+
+                        // Check if family exists
+                        familyDatabase.familyExists(familyID) { exists ->
+                            if (exists) {
+                                showDialog = true
+                            } else {
+                                val parent = Parent(username = username, password = password);
+                                familyDatabase.addParentToFamily(familyID, parent);
+                                navController.navigate(Landing.route);
+                            }
+                        }
+                    },
                     modifier = Modifier
                         .fillMaxWidth(0.8f)
                         .shadow(elevation = 8.dp, shape = RoundedCornerShape(24.dp)),
@@ -171,6 +179,10 @@ fun RegisterScreen(navController: NavHostController) {
 
             }
 
+        }
+        // if family ID already exist, show the dialog
+        FamilyExistDialog(showDialog) {
+            showDialog = false
         }
     }
 }
@@ -269,5 +281,21 @@ fun LoginText(navController: NavHostController) {
         }
     }
 
+}
+
+@Composable
+fun FamilyExistDialog(showDialog: Boolean, onDismiss: () -> Unit) {
+    if (showDialog) {
+        AlertDialog(
+            onDismissRequest = onDismiss,
+            title = { Text(text = "Error") },
+            text = { Text("Family ID already exists.") },
+            confirmButton = {
+                TextButton(onClick = onDismiss) {
+                    Text("OK")
+                }
+            }
+        )
+    }
 }
 
