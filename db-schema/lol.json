@@ -1,28 +1,24 @@
-// use big int for index
 {
     "families":{
-        1:{
+        "sweet family":{
             "parents":{
-                1:{
-                    "name": "Foo",
+                "1":{
                     "username":"Louis123",
-                    "password":"asdsa43r34",
+                    "password":"asdsa43r34"
                 },
-                2:{
-                    "name": "Louis",
+                "2":{
                     "username":"Louis123",
-                    "password":"asdsa43r34",
+                    "password":"asdsa43r34"
                 }
             },
             "kids": {
-                1: {
-                    "name": "bar#",
-                    "location_id": 
+                "1": {
+                    "username": "bar#",
+                    "location_id": "12345"
                 }
             }
-            "location_id": //id from the other file
-        }
-        2:{
+        },
+        "mel family":{
 
         }
     }
