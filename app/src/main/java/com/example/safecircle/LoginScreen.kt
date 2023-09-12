@@ -31,6 +31,9 @@ fun LoginScreen(navController: NavHostController){
         Button(onClick = { navController.navigate(Dashboard.route) }) {
             Text(text = "Login")
         }
+        Button(onClick = { navController.navigate(MapChild.route) }) {
+            Text(text = "MapChild")
+        }
         RegisterText(navController = navController)
     }
 

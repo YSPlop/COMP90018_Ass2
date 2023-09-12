@@ -21,5 +21,8 @@ fun NavigationComposable(navController: NavHostController){
         composable(Dashboard.route){
             DashboardScreen(navController)
         }
+        composable(MapChild.route){
+            MapChildScreen(navController)
+        }
     }
 }

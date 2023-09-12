@@ -17,3 +17,7 @@ object Landing: Destinations {
 object Dashboard: Destinations {
     override val route = "Dashboard"
 }
+
+object MapChild: Destinations {
+    override val route = "MapChild"
+}

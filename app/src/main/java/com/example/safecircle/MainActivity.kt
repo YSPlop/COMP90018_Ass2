@@ -1,5 +1,8 @@
 package com.example.safecircle
 
+import android.app.NotificationChannel
+import android.app.NotificationManager
+import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -28,6 +31,17 @@ class MainActivity : ComponentActivity() {
                 ) {
                     val navController = rememberNavController()
                     NavigationComposable(navController = navController)
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                        // Define the notification channel
+                        val channelId = "battery_notification_channel"
+                        val name = "Battery Notification"
+                        val importance = NotificationManager.IMPORTANCE_DEFAULT
+                        val mChannel = NotificationChannel(channelId, name, importance)
+
+                        // Register the channel with the system
+                        val notificationManager = getSystemService(NotificationManager::class.java)
+                        notificationManager.createNotificationChannel(mChannel)
+                    }
                 }
             }
         }
