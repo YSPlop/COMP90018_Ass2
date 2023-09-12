@@ -7,7 +7,7 @@ import androidx.navigation.compose.composable
 
 @Composable
 fun NavigationComposable(navController: NavHostController){
-    val startRoute = Register.route
+    val startRoute = Map.route
     NavHost(navController = navController, startDestination = startRoute){
         composable(Register.route){
             RegisterScreen(navController)
@@ -20,6 +20,9 @@ fun NavigationComposable(navController: NavHostController){
         }
         composable(Dashboard.route){
             DashboardScreen(navController)
+        }
+        composable(Map.route) {
+            MapsScreen(navController)
         }
     }
 }
