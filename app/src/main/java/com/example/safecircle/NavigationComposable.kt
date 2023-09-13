@@ -21,5 +21,6 @@ fun NavigationComposable(navController: NavHostController){
         composable(Dashboard.route){
             DashboardScreen(navController)
         }
+
     }
 }

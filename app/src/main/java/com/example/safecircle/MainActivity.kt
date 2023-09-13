@@ -17,6 +17,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import com.example.safecircle.ui.theme.SafeCircleTheme
 import com.google.firebase.database.DatabaseReference
@@ -48,7 +49,7 @@ class MainActivity : ComponentActivity() {
                 }
                 SensorScreen(
                     isTemperatureSensorAvailable = isTemperatureSensorAvailable,
-                    temperatureValue = temperatureValue
+                    temperatureValue = temperatureValue,
                 )
             }
         }
@@ -78,7 +79,7 @@ fun GreetingPreview() {
 @Composable
 fun SensorScreen(
     isTemperatureSensorAvailable: Boolean,
-    temperatureValue: Float
+    temperatureValue: Float,
 ) {
     Surface(
         modifier = Modifier.fillMaxSize()
