@@ -61,12 +61,12 @@ class FamilyLocationDao private constructor (
             eventListener
         )
     }
-//    fun fetchMembersLocations(onComplete: (Map<String, LatLng>) -> Unit){
-//        var task = locationCollection.child(familyId).get()
-//        task.addOnSuccessListener {
-//            memberSnapshot2HashMap(it).apply(onComplete)
-//        }
-//    }
+    fun getMembersLocationsAsync(onComplete: (Map<String, LatLng>) -> Unit){
+        var task = locationCollection.child(familyId).get()
+        task.addOnSuccessListener {
+            memberSnapshot2HashMap(it).apply(onComplete)
+        }
+    }
 
 
 

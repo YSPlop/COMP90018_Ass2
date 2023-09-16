@@ -92,5 +92,7 @@ class LocationSharingScreenViewModel(
             Log.d("LocationShringScreenViewModel", it.toString())
             memberLocations = it
         }
+        _familyLocationDao.getMembersLocationsAsync { memberLocations = it }
+
     }
 }
