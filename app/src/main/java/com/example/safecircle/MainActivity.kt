@@ -1,5 +1,6 @@
 package com.example.safecircle
 
+
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -18,7 +19,7 @@ import com.google.firebase.database.FirebaseDatabase
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        val firebase: DatabaseReference = FirebaseDatabase.getInstance().getReference();
+        val firebase: DatabaseReference = FirebaseDatabase.getInstance().reference
         setContent {
             SafeCircleTheme {
                 // A surface container using the 'background' color from the theme
@@ -32,6 +33,8 @@ class MainActivity : ComponentActivity() {
             }
         }
     }
+
+
 }
 
 @Composable

@@ -22,7 +22,7 @@ fun NavigationComposable(navController: NavHostController){
             DashboardScreen(navController)
         }
         composable(Map.route) {
-            MapsScreen(navController)
+            LocationSharingScreen(navController)
         }
     }
 }
