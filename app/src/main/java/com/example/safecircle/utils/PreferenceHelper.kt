@@ -1,3 +1,5 @@
+package com.example.safecircle.utils
+
 import android.content.Context
 import android.content.SharedPreferences
 
@@ -30,4 +32,11 @@ class PreferenceHelper(context: Context) {
     fun getUsername(): String? {
         return prefs.getString(USERNAME, null)
     }
+
+    fun clearPreferences() {
+        val editor = prefs.edit()
+        editor.clear()
+        editor.apply()
+    }
+
 }

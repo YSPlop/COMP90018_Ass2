@@ -1,4 +1,4 @@
-package com.example.safecircle
+package com.example.safecircle.ui.screen
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -20,6 +20,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
+import com.example.safecircle.Dashboard
+import com.example.safecircle.Register
 import com.example.safecircle.ui.theme.CyanSecondary
 
 @Composable
