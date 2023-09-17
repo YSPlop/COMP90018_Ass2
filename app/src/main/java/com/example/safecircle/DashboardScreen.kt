@@ -1,5 +1,7 @@
 package com.example.safecircle
 
+import android.app.Activity
+import android.hardware.SensorEventListener
 import androidx.compose.foundation.layout.Column
 import androidx.compose.material3.Button
 import androidx.compose.material3.Text
