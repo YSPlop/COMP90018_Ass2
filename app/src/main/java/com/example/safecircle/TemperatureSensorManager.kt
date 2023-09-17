@@ -1,10 +1,12 @@
 package com.example.safecircle
 
+import PreferenceHelper
 import android.content.Context
 import android.hardware.Sensor
 import android.hardware.SensorEvent
 import android.hardware.SensorEventListener
 import android.hardware.SensorManager
+import android.util.Log
 
 class TemperatureSensorManager(
     private val context: Context,
@@ -16,6 +18,8 @@ class TemperatureSensorManager(
 
     private val temperatureSensor: Sensor? =
         sensorManager.getDefaultSensor(Sensor.TYPE_AMBIENT_TEMPERATURE)
+
+    private val familyDatabase = FamilyDatabase()
 
     init {
         if (temperatureSensor != null) {
@@ -37,6 +41,14 @@ class TemperatureSensorManager(
     override fun onSensorChanged(event: SensorEvent) {
         val temperatureValue = event.values[0]
         callback(true, temperatureValue)
+
+        // Get the familyID and username from PreferenceHelper
+        val preferenceHelper = PreferenceHelper(context)
+        val familyID = preferenceHelper.getFamilyID().toString()
+        val username = preferenceHelper.getUsername().toString()
+
+        // Update the parent's temperature in Firebase
+        familyDatabase.updateParentTemperature(familyID, username, temperatureValue)
     }
 
     fun unregisterListener() {

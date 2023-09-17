@@ -1,6 +1,11 @@
 package com.example.safecircle
 
+import android.app.NotificationChannel
+import android.app.NotificationManager
+import android.content.Intent
+import android.os.Build
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.Arrangement
@@ -24,18 +29,23 @@ import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.FirebaseDatabase
 
 class MainActivity : ComponentActivity() {
-    private var temperatureValue: Float by mutableFloatStateOf(0.0f)
-    private var isTemperatureSensorAvailable: Boolean by mutableStateOf(false)
-    private lateinit var temperatureSensorManager: TemperatureSensorManager
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        val firebase: DatabaseReference = FirebaseDatabase.getInstance().getReference();
 
-        temperatureSensorManager = TemperatureSensorManager(this) { available, value ->
-            isTemperatureSensorAvailable = available
-            temperatureValue = value
+        val serviceIntent = Intent(this, ForegroundSensorService::class.java)
+        startService(serviceIntent)
+
+        // Notification Channel
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            val channel = NotificationChannel(
+                "SensorChannel",
+                "Sensor Monitoring",
+                NotificationManager.IMPORTANCE_DEFAULT
+            )
+            val manager = getSystemService(NotificationManager::class.java)
+            manager.createNotificationChannel(channel)
         }
+
 
         setContent {
             SafeCircleTheme {
@@ -47,16 +57,12 @@ class MainActivity : ComponentActivity() {
                     val navController = rememberNavController()
                     NavigationComposable(navController = navController)
                 }
-                SensorScreen(
-                    isTemperatureSensorAvailable = isTemperatureSensorAvailable,
-                    temperatureValue = temperatureValue,
-                )
             }
         }
     }
     override fun onPause() {
         super.onPause()
-        temperatureSensorManager.unregisterListener()
+        //stopService(Intent(this, ForegroundSensorService::class.java))
     }
 }
 
