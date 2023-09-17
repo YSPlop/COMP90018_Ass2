@@ -1,6 +1,6 @@
-package com.example.safecircle
+package com.example.safecircle.ui.screen
 
-import PreferenceHelper
+import com.example.safecircle.utils.PreferenceHelper
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Button
@@ -10,16 +10,17 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
+import com.example.safecircle.Dashboard
 
 @Composable
 fun LandingScreen(navController: NavHostController) {
     // Use the LocalContext to get the current context within Compose
     val context = LocalContext.current
 
-    // Create a PreferenceHelper instance using the current context
+    // Create a com.example.safecircle.utils.PreferenceHelper instance using the current context
     val preferenceHelper = PreferenceHelper(context)
 
-    // Retrieve the familyID and username from PreferenceHelper
+    // Retrieve the familyID and username from com.example.safecircle.utils.PreferenceHelper
     val familyID = preferenceHelper.getFamilyID()
     val username = preferenceHelper.getUsername()
 

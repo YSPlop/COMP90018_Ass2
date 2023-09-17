@@ -1,12 +1,12 @@
-package com.example.safecircle
+package com.example.safecircle.sensors
 
-import PreferenceHelper
+import com.example.safecircle.utils.PreferenceHelper
 import android.content.Context
 import android.hardware.Sensor
 import android.hardware.SensorEvent
 import android.hardware.SensorEventListener
 import android.hardware.SensorManager
-import android.util.Log
+import com.example.safecircle.database.FamilyDatabase
 
 class TemperatureSensorManager(
     private val context: Context,
@@ -42,7 +42,7 @@ class TemperatureSensorManager(
         val temperatureValue = event.values[0]
         callback(true, temperatureValue)
 
-        // Get the familyID and username from PreferenceHelper
+        // Get the familyID and username from com.example.safecircle.utils.PreferenceHelper
         val preferenceHelper = PreferenceHelper(context)
         val familyID = preferenceHelper.getFamilyID().toString()
         val username = preferenceHelper.getUsername().toString()

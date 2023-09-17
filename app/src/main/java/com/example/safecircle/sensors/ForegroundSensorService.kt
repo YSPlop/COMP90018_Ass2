@@ -1,4 +1,4 @@
-package com.example.safecircle
+package com.example.safecircle.sensors
 import android.app.Service;
 import android.content.Intent;
 import android.os.IBinder;
@@ -8,6 +8,7 @@ import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.core.app.NotificationCompat
+import com.example.safecircle.R
 
 class ForegroundSensorService: Service()  {
     private var temperatureValue: Float by mutableFloatStateOf(0.0f)

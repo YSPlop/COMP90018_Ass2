@@ -1,9 +1,10 @@
-package com.example.safecircle
+package com.example.safecircle.viewmodel
 
-import PreferenceHelper
+import com.example.safecircle.utils.PreferenceHelper
 import android.content.Context
-import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import com.example.safecircle.database.Parent
+import com.example.safecircle.database.FamilyDatabase
 
 class RegisterViewModel(private val context: Context) : ViewModel() {
 
