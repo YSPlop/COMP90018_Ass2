@@ -9,6 +9,4 @@ class LocationServiceNotificationReceiver: BroadcastReceiver() {
     override fun onReceive(context: Context?, intent: Intent?) {
         Toast.makeText(context, "You cannot disable this service", Toast.LENGTH_SHORT).show()
     }
-
-
 }
