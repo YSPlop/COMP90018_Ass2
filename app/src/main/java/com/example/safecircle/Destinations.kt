@@ -18,10 +18,6 @@ object Dashboard: Destinations {
     override val route = "Dashboard"
 }
 
-object AccountSettings: Destinations{
-    override val route = "AccountSettings"
-}
-
-object ConnectionSettings: Destinations{
-    override val route = "ConnectionSettings"
+object MapChild: Destinations {
+    override val route = "MapChild"
 }

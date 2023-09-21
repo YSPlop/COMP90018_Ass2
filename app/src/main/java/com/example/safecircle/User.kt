@@ -1,4 +1,4 @@
-package com.example.safecircle.database
+package com.example.safecircle
 
 abstract class User(
     open var username: String? = null,
@@ -12,7 +12,7 @@ data class Parent(
 
 data class Child(
     override var username: String? = null,
-    var code: String? = null,
+    override var password: String? = null,
     var locationId: String? = null
 ) : User()
 
