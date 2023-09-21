@@ -49,7 +49,7 @@ class ForegroundSensorService: Service()  {
     }
 
     private fun sendBatteryLowNotification() {
-        val notification = NotificationCompat.Builder(this, "battery_notification_channel")
+        val notification = NotificationCompat.Builder(this, "SensorChannel")
             .setContentTitle("Battery Low")
             .setContentText("Battery level is below 30%")
             .setSmallIcon(R.drawable.family) // replace with your icon
