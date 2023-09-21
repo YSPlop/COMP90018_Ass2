@@ -4,6 +4,7 @@ import android.content.Intent;
 import android.os.IBinder;
 import android.util.Log
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableDoubleStateOf
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -14,6 +15,9 @@ class ForegroundSensorService: Service()  {
     private var temperatureValue: Float by mutableFloatStateOf(0.0f)
     private var isTemperatureSensorAvailable: Boolean by mutableStateOf(false)
     private lateinit var temperatureSensorManager: TemperatureSensorManager
+    private var noiseValue: Double by mutableDoubleStateOf(0.0)
+    private var isNoiseSensorAvailable: Boolean by mutableStateOf(false)
+    private lateinit var noiseSensorManager: NoiseSensorManager
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         val notification = NotificationCompat.Builder(this, "SensorChannel")
@@ -29,6 +33,13 @@ class ForegroundSensorService: Service()  {
             isTemperatureSensorAvailable = available
             temperatureValue = value
         }
+
+        noiseSensorManager = NoiseSensorManager(this) { available, value ->
+            isNoiseSensorAvailable = available
+            noiseValue = value
+            Log.i("test", "Noise sensor value: " + value)
+        }
+        noiseSensorManager.init()
 
         // TODO: add more sensor managers
         // val anotherSensorManager = AnotherSensorManager(this) { ... }

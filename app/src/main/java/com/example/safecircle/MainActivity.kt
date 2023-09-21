@@ -1,12 +1,15 @@
 package com.example.safecircle
 
+import android.Manifest
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -17,11 +20,23 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.core.content.ContextCompat
 import androidx.navigation.compose.rememberNavController
 import com.example.safecircle.sensors.ForegroundSensorService
 import com.example.safecircle.ui.theme.SafeCircleTheme
 
 class MainActivity : ComponentActivity() {
+
+    companion object {
+        var audioRecordPermissionGranted: Boolean = false
+        var audioRecordPermission: String = Manifest.permission.RECORD_AUDIO
+    }
+
+    val requestPermissionLauncher =
+        registerForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted: Boolean ->
+            audioRecordPermissionGranted = isGranted;
+        }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -34,6 +49,18 @@ class MainActivity : ComponentActivity() {
             )
             val manager = getSystemService(NotificationManager::class.java)
             manager.createNotificationChannel(channel)
+        }
+
+        when {
+            ContextCompat.checkSelfPermission(
+                this,
+                audioRecordPermission
+            ) == PackageManager.PERMISSION_GRANTED -> {
+                audioRecordPermissionGranted = true;
+            }
+            else -> {
+                requestPermissionLauncher.launch(audioRecordPermission);
+            }
         }
 
         val serviceIntent = Intent(this, ForegroundSensorService::class.java)
@@ -57,6 +84,7 @@ class MainActivity : ComponentActivity() {
             }
         }
     }
+
     override fun onPause() {
         super.onPause()
         //stopService(Intent(this, ForegroundSensorService::class.java))
