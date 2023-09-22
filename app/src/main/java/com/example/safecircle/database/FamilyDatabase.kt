@@ -25,48 +25,6 @@ class FamilyDatabase {
             }
         })
     }
-    fun usernamePasswordMatch(username: String, password: String, family: String, onComplete: (Boolean) -> Unit) {
-        // Assuming familyReference points to the root node.
-        val familyRef = familiesReference.child(family).child("parent")
-
-        familyRef.addListenerForSingleValueEvent(object : ValueEventListener {
-            override fun onDataChange(dataSnapshot: DataSnapshot) {
-                val dbUsername = dataSnapshot.child("username").getValue(String::class.java)
-                val dbPassword = dataSnapshot.child("password").getValue(String::class.java)
-
-                if (username == dbUsername && password == dbPassword) {
-                    onComplete(true)
-                } else {
-                    onComplete(false)
-                }
-            }
-
-            override fun onCancelled(databaseError: DatabaseError) {
-                onComplete(false)
-            }
-        })
-    }
-
-    fun codeMatch(code: String, family: String, onComplete: (Boolean) -> Unit) {
-        // Assuming familyReference points to the root node.
-        val childRef = familiesReference.child(family).child("child")
-
-        childRef.addListenerForSingleValueEvent(object : ValueEventListener {
-            override fun onDataChange(dataSnapshot: DataSnapshot) {
-                val dbCode = dataSnapshot.child("code").getValue(String::class.java)
-
-                if (code == dbCode) {
-                    onComplete(true)
-                } else {
-                    onComplete(false)
-                }
-            }
-
-            override fun onCancelled(databaseError: DatabaseError) {
-                onComplete(false)
-            }
-        })
-    }
 
     fun addParentToFamily(familyId: String, parent: Parent) {
         val parentId = familiesReference.child(familyId).child("parents").push().key ?: return
