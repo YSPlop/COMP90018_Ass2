@@ -1,34 +1,46 @@
 package com.example.safecircle.ui.screen
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.ClickableText
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
-import com.example.safecircle.Dashboard
+import com.example.safecircle.database.FamilyDatabase
+import com.example.safecircle.Landing
 import com.example.safecircle.Register
 import com.example.safecircle.ui.theme.CyanSecondary
 import com.example.safecircle.ui.theme.YellowPrimary
 import com.example.safecircle.viewmodel.LoginViewModel
-import com.example.safecircle.viewmodel.RegisterViewModel
-import com.google.firebase.database.DatabaseReference
-import com.google.firebase.database.FirebaseDatabase
 
 
 @Composable
@@ -181,7 +193,11 @@ fun LoginScreen(navController: NavHostController, viewModel: LoginViewModel) {
                         familyDatabase.familyExists(familyID) { exists ->
                             if (exists) {
                                 if (loginType == "parent") {
-                                    viewModel.loginAsParent(familyID, username, password) { successfulLogin ->
+                                    viewModel.loginAsParent(
+                                        familyID,
+                                        username,
+                                        password
+                                    ) { successfulLogin ->
                                         if (successfulLogin) {
                                             navController.navigate(Landing.route)
                                         } else {
@@ -212,21 +228,12 @@ fun LoginScreen(navController: NavHostController, viewModel: LoginViewModel) {
                 ) {
                     Text(text = "Login", fontSize = 24.sp, fontWeight = FontWeight.Bold)
                 }
-
                 // Text to display the register as an option
                 RegisterText(navController);
 
             }
-
-
-    ) {
-        Text(text = "LoginScreen")
-        Button(onClick = { navController.navigate(Dashboard.route) }) {
-            Text(text = "Login")
         }
-        RegisterText(navController = navController)
     }
-
 }
 
 @Composable
@@ -247,7 +254,10 @@ fun RegisterText(navController: NavHostController) {
             horizontalArrangement = Arrangement.Center
         ) {
             ClickableText(
-                text = AnnotatedString("Register", SpanStyle(color = CyanSecondary, fontWeight = FontWeight.Bold)),
+                text = AnnotatedString(
+                    "Register",
+                    SpanStyle(color = CyanSecondary, fontWeight = FontWeight.Bold)
+                ),
                 onClick = { offset ->
                     navController.navigate(Register.route)
                 },
@@ -264,5 +274,4 @@ fun RegisterText(navController: NavHostController) {
             )
         }
     }
-
 }
