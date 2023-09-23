@@ -131,8 +131,8 @@ fun LoginScreen(navController: NavHostController) {
                         Text(text = "Family ID:", fontWeight = FontWeight.Bold)
                         Spacer(modifier = Modifier.width(8.dp))
                         OutlinedTextField(
-                            value = username,
-                            onValueChange = { username = it },
+                            value = familyID,
+                            onValueChange = { familyID = it },
                             placeholder = { Text("Enter family ID") },
                             modifier = Modifier.fillMaxWidth(),
                             shape = RoundedCornerShape(24.dp),
