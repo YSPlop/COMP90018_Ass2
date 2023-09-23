@@ -25,6 +25,7 @@ class FamilyDatabase {
             }
         })
     }
+    
     fun usernamePasswordMatch(username: String, password: String, family: String, onComplete: (Boolean, String?) -> Unit) {
         val parentsRef = familiesReference.child(family).child("parents")
 
@@ -78,8 +79,6 @@ class FamilyDatabase {
             }
         })
     }
-
-
 
     fun addParentToFamily(familyId: String, parent: Parent, onSuccess: (String) -> Unit) {
         val parentId = familiesReference.child(familyId).child("parents").push().key ?: return
