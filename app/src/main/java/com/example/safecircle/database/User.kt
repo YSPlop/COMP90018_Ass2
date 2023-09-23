@@ -1,5 +1,9 @@
 package com.example.safecircle.database
 
+enum class Role {
+    PARENT, CHILD
+}
+
 abstract class User(
     open var username: String? = null,
     open var password: String? = null

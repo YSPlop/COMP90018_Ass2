@@ -56,6 +56,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import com.example.safecircle.Dashboard
 import com.example.safecircle.Landing
@@ -63,12 +64,14 @@ import com.example.safecircle.Register
 import com.example.safecircle.database.FamilyDatabase
 import com.example.safecircle.ui.theme.CyanSecondary
 import com.example.safecircle.ui.theme.YellowPrimary
+import com.example.safecircle.viewmodel.LoginViewModel
+import com.example.safecircle.viewmodel.RegisterViewModel
 import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.FirebaseDatabase
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun LoginScreen(navController: NavHostController) {
+fun LoginScreen(navController: NavHostController, viewModel: LoginViewModel) {
     var loginType by remember { mutableStateOf("parent") }
     var familyID by remember { mutableStateOf("") }
     var code by remember { mutableStateOf("") }
@@ -212,61 +215,31 @@ fun LoginScreen(navController: NavHostController) {
                 // Login Button
                 Button(
                     onClick = {
-                        val isValid = true
-                        //val userDatabase = UserDatabase(
                         val familyDatabase = FamilyDatabase()
-                        val childId = ""
                         // Check if family exists
                         familyDatabase.familyExists(familyID) { exists ->
                             if (exists) {
                                 if (loginType == "parent") {
-                                    familyDatabase.usernamePasswordMatch(
-                                        username,
-                                        password,
-                                        familyID
-                                    ) { match ->
-                                        if (match) {
+                                    viewModel.loginAsParent(familyID, username, password) { successfulLogin ->
+                                        if (successfulLogin) {
                                             navController.navigate(Landing.route)
                                         } else {
                                             showErrorDialog = true
                                         }
                                     }
-
-                                } else {
-                                    showErrorDialog = true
-                                }
-                                if (loginType == "kid") {
-                                    familyDatabase.codeMatch(
-                                        code,
-                                        familyID
-                                    ) { match ->
-                                        if (match) {
+                                } else if (loginType == "kid") {
+                                    viewModel.loginAsKid(familyID, code) { successfulLogin ->
+                                        if (successfulLogin) {
                                             navController.navigate(Landing.route)
                                         } else {
                                             showErrorDialog = true
                                         }
                                     }
-
-                                } else {
-                                    showErrorDialog = true
                                 }
+                            } else {
+                                showErrorDialog = true
                             }
                         }
-
-                        //if (isValid) {
-                        //    navController.navigate(Landing.route)
-                        //} else {
-                        //showErrorDialog = true
-                        //}
-
-
-                        //userDatabase.validateUser(username, password) { isValid ->
-                        //    if (isValid) {
-                        //        navController.navigate(Landing.route)
-                        //    } else {
-                        //        showErrorDialog = true
-                        //    }
-                        //}
                     },
                     modifier = Modifier
                         .fillMaxWidth(0.8f)
