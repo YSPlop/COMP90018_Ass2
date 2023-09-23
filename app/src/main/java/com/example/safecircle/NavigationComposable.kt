@@ -13,6 +13,7 @@ import com.example.safecircle.ui.screen.DashboardScreen
 import com.example.safecircle.ui.screen.LandingScreen
 import com.example.safecircle.ui.screen.LoginScreen
 import com.example.safecircle.ui.screen.RegisterScreen
+import com.example.safecircle.viewmodel.LoginViewModel
 import com.example.safecircle.viewmodel.RegisterViewModel
 
 @Composable
@@ -29,13 +30,14 @@ fun NavigationComposable(navController: NavHostController){
     }
 
     val registerViewModel: RegisterViewModel = remember { RegisterViewModel(context) }
+    val loginViewModel: LoginViewModel = remember { LoginViewModel(context) }
 
     NavHost(navController = navController, startDestination = startRoute){
         composable(Register.route){
             RegisterScreen(navController, registerViewModel)
         }
         composable(Login.route){
-            LoginScreen(navController)
+            LoginScreen(navController, loginViewModel)
         }
         composable(Landing.route){
             LandingScreen(navController)

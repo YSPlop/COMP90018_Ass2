@@ -1,5 +1,6 @@
 package com.example.safecircle.ui.screen
 
+import android.util.Log
 import android.widget.Toast
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -24,11 +25,13 @@ import com.example.safecircle.utils.PreferenceHelper
 @Composable
 fun AccountSettingsScreen(navController: NavHostController) {
     val context = LocalContext.current
-    val prefsHelper = PreferenceHelper(context)
+    val preferenceHelper = PreferenceHelper(context)
+
     val familyDatabase = FamilyDatabase()
 
     val drawerState = rememberDrawerState(DrawerValue.Closed)
-    val familyId = prefsHelper.getFamilyID()
+    val familyId = preferenceHelper.getFamilyID()
+    val username = preferenceHelper.getUsername()
     val childName = remember { mutableStateOf(TextFieldValue("")) }
     val childCode = remember { mutableStateOf(TextFieldValue("")) }
 
@@ -47,6 +50,8 @@ fun AccountSettingsScreen(navController: NavHostController) {
                     .padding(16.dp)
                     .verticalScroll(rememberScrollState())
             ) {
+                Text(text= familyId.toString())
+                Text(text = username.toString())
                 Text(text = "Create Account for Child", modifier = Modifier.padding(8.dp))
 
                 OutlinedTextField(
@@ -64,10 +69,10 @@ fun AccountSettingsScreen(navController: NavHostController) {
                 Spacer(modifier = Modifier.height(16.dp))
 
                 Button(onClick = {
+                    Log.i("test", "onclick called: famID: $familyId")
                     familyId?.let {
                         val newChild = Child(childName.value.text, childCode.value.text)
                         familyDatabase.addChildToFamily(it, newChild)
-
                         // Displaying the Toast
                         Toast.makeText(
                             context,
@@ -85,8 +90,10 @@ fun AccountSettingsScreen(navController: NavHostController) {
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-                Button(onClick = { navController.navigate(Login.route) }) {
-                    prefsHelper.clearPreferences()
+                Button(onClick = {
+                    navController.navigate(Login.route)
+                    preferenceHelper.clearPreferences()
+                }) {
                     Text(text = "Log out")
                 }
 
