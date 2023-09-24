@@ -55,6 +55,9 @@ fun NavigationComposable(navController: NavHostController){
         composable(Dashboard.route){
             DashboardScreen(navController)
         }
+        composable(Map.route) {
+            LocationSharingScreen(navController)
+        }
         composable(Settings.route){
             SettingsScreen(navController)
         }
@@ -70,6 +73,5 @@ fun NavigationComposable(navController: NavHostController){
         composable(ChildSettings.route){
             ChildSettingsScreen(navController)
         }
-
     }
 }
