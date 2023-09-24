@@ -7,12 +7,16 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
-import com.example.safecircle.ui.screen.AccountSettingsScreen
-import com.example.safecircle.ui.screen.ConnectionSettingsScreen
+import com.example.safecircle.database.Role
+import com.example.safecircle.ui.screen.AboutScreen
+import com.example.safecircle.ui.screen.ChildMapScreen
+import com.example.safecircle.ui.screen.ChildSettingsScreen
 import com.example.safecircle.ui.screen.DashboardScreen
+import com.example.safecircle.ui.screen.HelpScreen
 import com.example.safecircle.ui.screen.LandingScreen
 import com.example.safecircle.ui.screen.LoginScreen
 import com.example.safecircle.ui.screen.RegisterScreen
+import com.example.safecircle.ui.screen.SettingsScreen
 import com.example.safecircle.viewmodel.LoginViewModel
 import com.example.safecircle.viewmodel.RegisterViewModel
 
@@ -22,9 +26,15 @@ fun NavigationComposable(navController: NavHostController){
     val preferenceHelper = PreferenceHelper(context)
     val familyId = preferenceHelper.getFamilyID()
     val username = preferenceHelper.getUsername()
+    val role = preferenceHelper.getRole()
 
     val startRoute = if (!familyId.isNullOrEmpty() && !username.isNullOrEmpty()) {
-        Dashboard.route
+        if(role == Role.PARENT){
+            Dashboard.route
+        }else{
+            ChildMap.route
+        }
+
     } else {
         Register.route
     }
@@ -45,11 +55,21 @@ fun NavigationComposable(navController: NavHostController){
         composable(Dashboard.route){
             DashboardScreen(navController)
         }
-        composable(AccountSettings.route){
-            AccountSettingsScreen(navController)
+        composable(Settings.route){
+            SettingsScreen(navController)
         }
-        composable(ConnectionSettings.route){
-            ConnectionSettingsScreen(navController)
+        composable(About.route){
+            AboutScreen(navController)
         }
+        composable(Help.route){
+            HelpScreen(navController)
+        }
+        composable(ChildMap.route){
+            ChildMapScreen(navController)
+        }
+        composable(ChildSettings.route){
+            ChildSettingsScreen(navController)
+        }
+
     }
 }

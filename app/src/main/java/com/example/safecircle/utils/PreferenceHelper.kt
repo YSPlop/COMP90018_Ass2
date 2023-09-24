@@ -14,6 +14,7 @@ class PreferenceHelper(context: Context) {
         const val USERNAME = "USERNAME"
         const val OBJECT_ID = "OBJECT_ID"
         const val ROLE = "ROLE"
+        const val EMERGENCY_CONTACT = "EMERGENCY_CONTACT"
     }
 
     fun setFamilyID(familyID: String) {
@@ -57,6 +58,16 @@ class PreferenceHelper(context: Context) {
     fun getRole(): Role? {
         val roleStr = prefs.getString(ROLE, null)
         return if (roleStr != null) Role.valueOf(roleStr) else null
+    }
+
+    fun setEmergencyContact(number: String) {
+        val editor = prefs.edit()
+        editor.putString(EMERGENCY_CONTACT, number)
+        editor.apply()
+    }
+
+    fun getEmergencyContact(): String? {
+        return prefs.getString(EMERGENCY_CONTACT, null)
     }
 
     fun clearPreferences() {

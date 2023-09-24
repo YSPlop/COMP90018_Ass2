@@ -1,5 +1,6 @@
 package com.example.safecircle.ui.screen
 
+import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -13,6 +14,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.ClickableText
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.OutlinedTextField
@@ -35,8 +37,9 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
+import com.example.safecircle.ChildMap
+import com.example.safecircle.Dashboard
 import com.example.safecircle.database.FamilyDatabase
-import com.example.safecircle.Landing
 import com.example.safecircle.Register
 import com.example.safecircle.ui.theme.CyanSecondary
 import com.example.safecircle.ui.theme.YellowPrimary
@@ -51,6 +54,7 @@ fun LoginScreen(navController: NavHostController, viewModel: LoginViewModel) {
     var username by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var showErrorDialog by remember { mutableStateOf(false) }
+    var errorMessage by remember { mutableStateOf("") }
 
     Box(modifier = Modifier.fillMaxSize()) {
         // Drawing the background
@@ -188,32 +192,39 @@ fun LoginScreen(navController: NavHostController, viewModel: LoginViewModel) {
                 // Login Button
                 Button(
                     onClick = {
+                        Log.i("test", "login button clicked call")
                         val familyDatabase = FamilyDatabase()
                         // Check if family exists
                         familyDatabase.familyExists(familyID) { exists ->
+                            Log.i("test", "exist: $exists")
                             if (exists) {
+
                                 if (loginType == "parent") {
                                     viewModel.loginAsParent(
                                         familyID,
                                         username,
                                         password
-                                    ) { successfulLogin ->
+                                    ) { successfulLogin, message ->
                                         if (successfulLogin) {
-                                            navController.navigate(Landing.route)
+                                            Log.i("test", "Parent login")
+                                            navController.navigate(Dashboard.route)
                                         } else {
+                                            errorMessage = message.toString()
                                             showErrorDialog = true
                                         }
                                     }
                                 } else if (loginType == "kid") {
-                                    viewModel.loginAsKid(familyID, code) { successfulLogin ->
+                                    viewModel.loginAsKid(familyID, code) { successfulLogin, message ->
                                         if (successfulLogin) {
-                                            navController.navigate(Landing.route)
+                                            navController.navigate(ChildMap.route)
                                         } else {
+                                            errorMessage = message.toString()
                                             showErrorDialog = true
                                         }
                                     }
                                 }
                             } else {
+                                errorMessage = "Family ID not found"
                                 showErrorDialog = true
                             }
                         }
@@ -233,6 +244,18 @@ fun LoginScreen(navController: NavHostController, viewModel: LoginViewModel) {
 
             }
         }
+    }
+    if (showErrorDialog) {
+        AlertDialog(
+            onDismissRequest = { showErrorDialog = false },
+            title = { Text("Login Error") },
+            text = { Text(errorMessage) },
+            confirmButton = {
+                Button(onClick = { showErrorDialog = false }) {
+                    Text("OK")
+                }
+            }
+        )
     }
 }
 
