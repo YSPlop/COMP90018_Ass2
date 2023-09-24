@@ -93,6 +93,93 @@ class FamilyDatabase {
             }
     }
 
+    fun addNewParentToFamily(familyId: String, parent: Parent, onSuccess: () -> Unit, onFailure: (String) -> Unit) {
+        // First, check if there is a parent with the same username under the family
+        familiesReference.child(familyId).child("parents").orderByChild("username").equalTo(parent.username)
+            .addListenerForSingleValueEvent(object : ValueEventListener {
+                override fun onDataChange(dataSnapshot: DataSnapshot) {
+                    // If a parent with the same username exists, then notify the caller
+                    if (dataSnapshot.exists()) {
+                        onFailure("Parent with the same username already exists.")
+                        return
+                    }
+
+                    // Generate a new parent ID for the new entry
+                    val parentId = familiesReference.child(familyId).child("parents").push().key
+                    if (parentId == null) {
+                        onFailure("Failed to generate a unique ID for the parent.")
+                        return
+                    }
+
+                    // Otherwise, add the parent to the database using the generated parent ID
+                    familiesReference.child(familyId).child("parents").child(parentId).setValue(parent)
+                        .addOnSuccessListener {
+                            Log.i("test", "New parent added to Firebase Database under 'parents' key")
+                            onSuccess()
+                        }
+                        .addOnFailureListener { e ->
+                            Log.e("test", "Fail to add parent", e)
+                            onFailure("Failed to add parent due to database error.")
+                        }
+                }
+
+                override fun onCancelled(databaseError: DatabaseError) {
+                    Log.e("test", "Database error when checking for parent username", databaseError.toException())
+                    onFailure("Failed due to database error.")
+                }
+            })
+    }
+
+    // Function to add/update personal details to Firebase
+    fun savePersonalDetails(familyId: String, objectId: String, details: PersonalDetails, onComplete: (Boolean, String?) -> Unit) {
+        familiesReference.child(familyId).child("parents").child(objectId).child("personalDetails").setValue(details)
+            .addOnSuccessListener {
+                onComplete(true, "Details saved successfully!")
+            }
+            .addOnFailureListener { e ->
+                onComplete(false, e.localizedMessage)
+            }
+    }
+
+    // Function to retrieve personal details from Firebase
+    fun getPersonalDetails(familyId: String, objectId: String, onComplete: (PersonalDetails?) -> Unit) {
+        familiesReference.child(familyId).child("parents").child(objectId).child("personalDetails").addListenerForSingleValueEvent(object :
+            ValueEventListener {
+            override fun onDataChange(dataSnapshot: DataSnapshot) {
+                val details = dataSnapshot.getValue(PersonalDetails::class.java)
+                onComplete(details)
+            }
+
+            override fun onCancelled(databaseError: DatabaseError) {
+                onComplete(null)
+            }
+        })
+    }
+
+        fun getAllParentsDetails(familyId: String, onComplete: (List<PersonalDetails>) -> Unit) {
+            val parentsRef = familiesReference.child(familyId).child("parents")
+
+            parentsRef.addListenerForSingleValueEvent(object : ValueEventListener {
+                override fun onDataChange(dataSnapshot: DataSnapshot) {
+                    val parentsList = mutableListOf<PersonalDetails>()
+
+                    dataSnapshot.children.forEach { parentSnapshot ->
+                        val parent = parentSnapshot.getValue(Parent::class.java)
+                        parent?.personalDetails?.let { parentsList.add(it) }
+                    }
+
+                    onComplete(parentsList)
+                }
+
+
+                override fun onCancelled(databaseError: DatabaseError) {
+                    // Handle the error accordingly, possibly calling onComplete with an empty list.
+                    onComplete(listOf())
+                }
+            })
+        }
+
+
     fun addChildToFamily(familyId: String, child: Child) {
         val childId = familiesReference.child(familyId).child("children").push().key ?: return
         Log.i("test", "Child add function called: famID: $familyId, child: ${child.code}")
