@@ -29,17 +29,17 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-<!--        <service-->
-<!--            android:name=".ForegroundLocationService"-->
-<!--            android:foregroundServiceType="location">-->
-<!--        &lt;!&ndash; Any inner elements would go here. &ndash;&gt;-->
-<!--        </service>-->
         <service
             android:name=".services.LocationPushService"
             android:foregroundServiceType="location" />
         <meta-data
             android:name="com.google.android.geo.API_KEY"
             android:value="${GOOGLE_MAPS_API_KEY}" />
+        <service
+            android:name=".sensors.ForegroundSensorService"
+            android:exported="false"
+            android:foregroundServiceType="dataSync">
+        </service>
     </application>
 
 
