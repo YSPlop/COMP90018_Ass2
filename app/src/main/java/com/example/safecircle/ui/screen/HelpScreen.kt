@@ -22,7 +22,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
@@ -38,7 +40,10 @@ fun HelpScreen(navController: NavHostController) {
         drawerState = drawerState,
         drawerContent = { AppDrawer(drawerState, navController) }
     ) {
-        Column(modifier = Modifier.fillMaxSize()) {
+
+        Column(
+            modifier = Modifier.fillMaxSize()
+        ) {
             AppTopBar(drawerState, "Help")
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally,
@@ -48,59 +53,7 @@ fun HelpScreen(navController: NavHostController) {
                     .verticalScroll(rememberScrollState())
             ) {
 
-                ElevatedCard(
-                    elevation = CardDefaults.cardElevation(
-                        defaultElevation = 6.dp
-                    ),
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(12.dp)
-                ) {
-                    Column(
-                        modifier = Modifier.padding(16.dp)
-                    ) {
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.Start
-                        ) {
-                            Text(
-                                text = "About Us",
-                                fontWeight = FontWeight.Bold,
-                                fontSize = 18.sp
-                            )
-                        }
-                        Spacer(modifier = Modifier.height(16.dp))
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Text(
-                                text = "About Us",
-                                fontWeight = FontWeight.Bold,
-                                fontSize = 18.sp
-                            )
-                            Spacer(modifier = Modifier.height(8.dp))
 
-                            var description = "This is a description"
-                            OutlinedTextField(
-                                value = description,
-                                onValueChange = { description = it }
-                            )
-
-                            var aboutText = ""
-                            BasicTextField(
-                                value = aboutText,
-                                onValueChange = { aboutText = it },
-                                textStyle = TextStyle(fontSize = 16.sp),
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(8.dp)
-                            )
-                            Spacer(modifier = Modifier.height(16.dp))
-                        }
-                    }
-                }
 
             }
         }
