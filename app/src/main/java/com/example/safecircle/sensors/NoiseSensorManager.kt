@@ -20,12 +20,13 @@ class NoiseSensorManager(
     private var recorder: AudioRecord? = null
 
     fun init(){
+
         if (ActivityCompat.checkSelfPermission(
                 context,
                 Manifest.permission.RECORD_AUDIO
             ) != PackageManager.PERMISSION_GRANTED
         ) {
-            Log.w("test", "Noise sensor service will not start because audio record permission not granted.")
+            Log.w("test", "Noise detection service not started because audio record permission not granted")
             return
         }
 
@@ -34,7 +35,7 @@ class NoiseSensorManager(
             while (isActive) {
                 val amplitude = getAmplitude()
                 callback(true, amplitude)
-                delay(100)
+                delay(1000)
             }
         }
     }

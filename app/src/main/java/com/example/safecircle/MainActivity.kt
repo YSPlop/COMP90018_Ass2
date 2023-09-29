@@ -27,14 +27,8 @@ import com.example.safecircle.ui.theme.SafeCircleTheme
 
 class MainActivity : ComponentActivity() {
 
-    companion object {
-        var audioRecordPermissionGranted: Boolean = false
-        var audioRecordPermission: String = Manifest.permission.RECORD_AUDIO
-    }
-
     val requestPermissionLauncher =
-        registerForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted: Boolean ->
-            audioRecordPermissionGranted = isGranted;
+        registerForActivityResult(ActivityResultContracts.RequestPermission()) {
         }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -54,12 +48,11 @@ class MainActivity : ComponentActivity() {
         when {
             ContextCompat.checkSelfPermission(
                 this,
-                audioRecordPermission
+                Manifest.permission.RECORD_AUDIO
             ) == PackageManager.PERMISSION_GRANTED -> {
-                audioRecordPermissionGranted = true;
             }
             else -> {
-                requestPermissionLauncher.launch(audioRecordPermission);
+                requestPermissionLauncher.launch(Manifest.permission.RECORD_AUDIO);
             }
         }
 
@@ -69,7 +62,6 @@ class MainActivity : ComponentActivity() {
         } else {
             startService(serviceIntent)
         }
-
 
         setContent {
             SafeCircleTheme {
