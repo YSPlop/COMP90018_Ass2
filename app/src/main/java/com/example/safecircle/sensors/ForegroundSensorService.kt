@@ -1,5 +1,7 @@
 package com.example.safecircle.sensors
+import android.app.NotificationManager
 import android.app.Service;
+import android.content.Context
 import android.content.Intent;
 import android.os.IBinder;
 import android.util.Log
@@ -18,10 +20,11 @@ class ForegroundSensorService: Service()  {
     private var noiseValue: Double by mutableDoubleStateOf(0.0)
     private var isNoiseSensorAvailable: Boolean by mutableStateOf(false)
     private lateinit var noiseSensorManager: NoiseSensorManager
+    private lateinit var batterySensorManager: BatterySensorManager
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         val notification = NotificationCompat.Builder(this, "SensorChannel")
-            .setContentTitle("Monitoring Temperature")
+            .setContentTitle("Monitoring Battery & Temperature")
             .setSmallIcon(R.drawable.family) // replace with your icon
             .build()
 
@@ -41,10 +44,28 @@ class ForegroundSensorService: Service()  {
         }
         noiseSensorManager.init()
 
+        batterySensorManager = BatterySensorManager(this) { batteryPercentage ->
+            if (batteryPercentage <= 30) {
+                sendBatteryLowNotification()
+            }
+        }
+        batterySensorManager.registerListener()
+
         // TODO: add more sensor managers
         // val anotherSensorManager = AnotherSensorManager(this) { ... }
 
         return START_NOT_STICKY
+    }
+
+    private fun sendBatteryLowNotification() {
+        val notification = NotificationCompat.Builder(this, "SensorChannel")
+            .setContentTitle("Battery Low")
+            .setContentText("Battery level is below 30%")
+            .setSmallIcon(R.drawable.family) // replace with your icon
+            .build()
+
+        val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+        notificationManager.notify(2, notification)
     }
 
     override fun onBind(intent: Intent?): IBinder? {
@@ -54,6 +75,7 @@ class ForegroundSensorService: Service()  {
     override fun onDestroy() {
         super.onDestroy()
         temperatureSensorManager.unregisterListener()
+        batterySensorManager.unregisterListener()
         Log.i("test", "Foreground service Stopped")
     }
 }

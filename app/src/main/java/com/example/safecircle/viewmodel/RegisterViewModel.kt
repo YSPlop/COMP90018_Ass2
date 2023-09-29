@@ -5,6 +5,7 @@ import android.content.Context
 import androidx.lifecycle.ViewModel
 import com.example.safecircle.database.Parent
 import com.example.safecircle.database.FamilyDatabase
+import com.example.safecircle.database.Role
 
 class RegisterViewModel(private val context: Context) : ViewModel() {
 
@@ -12,12 +13,14 @@ class RegisterViewModel(private val context: Context) : ViewModel() {
         val familyDatabase = FamilyDatabase()
 
         val parent = Parent(username = username, password = password)
-        familyDatabase.addParentToFamily(familyID, parent)
 
-        // Save to SharedPreferences
-        val preferenceHelper = PreferenceHelper(context)
-        preferenceHelper.setFamilyID(familyID)
-        preferenceHelper.setUsername(username)
-
+        familyDatabase.addParentToFamily(familyID, parent) { parentId ->
+            // Save to SharedPreferences
+            val preferenceHelper = PreferenceHelper(context)
+            preferenceHelper.setFamilyID(familyID)
+            preferenceHelper.setUsername(username)
+            preferenceHelper.setObjectId(parentId) // Setting the parentID as objectId
+            preferenceHelper.setRole(Role.PARENT)
+        }
     }
 }

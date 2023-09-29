@@ -1,10 +1,8 @@
 package com.example.safecircle
 
-import android.Manifest
+import android.content.Intent
 import android.app.NotificationChannel
 import android.app.NotificationManager
-import android.content.Intent
-import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -22,7 +20,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.core.content.ContextCompat
 import androidx.navigation.compose.rememberNavController
+
+import com.example.safecircle.services.LocationPushService
 import com.example.safecircle.sensors.ForegroundSensorService
+
 import com.example.safecircle.ui.theme.SafeCircleTheme
 
 class MainActivity : ComponentActivity() {
@@ -33,7 +34,6 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
         // Notification Channel
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val channel = NotificationChannel(

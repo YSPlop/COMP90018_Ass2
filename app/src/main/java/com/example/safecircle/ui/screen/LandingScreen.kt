@@ -23,13 +23,16 @@ fun LandingScreen(navController: NavHostController) {
     // Retrieve the familyID and username from com.example.safecircle.utils.PreferenceHelper
     val familyID = preferenceHelper.getFamilyID()
     val username = preferenceHelper.getUsername()
+    val objectID = preferenceHelper.getObjectId()
+    val role = preferenceHelper.getRole()
 
     Column(
         modifier = Modifier.padding(16.dp) // Add some padding around the elements for better visual appearance
     ) {
         Text(text = "Family ID: $familyID")
         Text(text = "Username: $username")
-
+        Text(text = "objectID: $objectID")
+        Text(text = "role: $role")
         Button(onClick = { navController.navigate(Dashboard.route) }) {
             Text(text = "Start")
         }
