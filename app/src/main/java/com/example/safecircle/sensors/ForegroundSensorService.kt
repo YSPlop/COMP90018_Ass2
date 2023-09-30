@@ -20,7 +20,7 @@ class ForegroundSensorService: Service()  {
     private lateinit var temperatureSensorManager: TemperatureSensorManager
     private var noiseValue: Double by mutableDoubleStateOf(0.0)
     private var isNoiseSensorAvailable: Boolean by mutableStateOf(false)
-    public lateinit var noiseSensorManager: NoiseSensorManager
+    lateinit var noiseSensorManager: NoiseSensorManager private set
     private lateinit var batterySensorManager: BatterySensorManager
 
     companion object{
