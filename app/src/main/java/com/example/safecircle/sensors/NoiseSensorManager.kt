@@ -1,6 +1,5 @@
 package com.example.safecircle.sensors
 
-import android.Manifest
 import android.util.Log
 import android.annotation.SuppressLint
 import android.content.Context
@@ -21,21 +20,12 @@ class NoiseSensorManager(
 
     fun init(){
 
-        if (ActivityCompat.checkSelfPermission(
-                context,
-                Manifest.permission.RECORD_AUDIO
-            ) != PackageManager.PERMISSION_GRANTED
-        ) {
-            Log.w("test", "Noise detection service not started because audio record permission not granted")
-            return
-        }
-
         start();
         job = CoroutineScope(Dispatchers.IO).launch {
             while (isActive) {
                 val amplitude = getAmplitude()
                 callback(true, amplitude)
-                delay(1000)
+                delay(100)
             }
         }
     }

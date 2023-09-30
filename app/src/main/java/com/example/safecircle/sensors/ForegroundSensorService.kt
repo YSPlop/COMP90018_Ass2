@@ -12,6 +12,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.core.app.NotificationCompat
 import com.example.safecircle.R
+import javax.inject.Singleton
 
 class ForegroundSensorService: Service()  {
     private var temperatureValue: Float by mutableFloatStateOf(0.0f)
@@ -19,8 +20,16 @@ class ForegroundSensorService: Service()  {
     private lateinit var temperatureSensorManager: TemperatureSensorManager
     private var noiseValue: Double by mutableDoubleStateOf(0.0)
     private var isNoiseSensorAvailable: Boolean by mutableStateOf(false)
-    private lateinit var noiseSensorManager: NoiseSensorManager
+    public lateinit var noiseSensorManager: NoiseSensorManager
     private lateinit var batterySensorManager: BatterySensorManager
+
+    companion object{
+        @Volatile
+        private var instance: ForegroundSensorService? = null
+        fun getInstance() = instance ?: synchronized(this){
+            instance ?: ForegroundSensorService().also { instance = it }
+        }
+    }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         val notification = NotificationCompat.Builder(this, "SensorChannel")
@@ -37,13 +46,6 @@ class ForegroundSensorService: Service()  {
             temperatureValue = value
         }
 
-        noiseSensorManager = NoiseSensorManager(this) { available, value ->
-            isNoiseSensorAvailable = available
-            noiseValue = value
-            Log.i("test", "Noise sensor value: " + value)
-        }
-        noiseSensorManager.init()
-
         batterySensorManager = BatterySensorManager(this) { batteryPercentage ->
             if (batteryPercentage <= 30) {
                 sendBatteryLowNotification()
@@ -55,6 +57,19 @@ class ForegroundSensorService: Service()  {
         // val anotherSensorManager = AnotherSensorManager(this) { ... }
 
         return START_NOT_STICKY
+    }
+
+    fun startNoiseSensor() {
+        noiseSensorManager = NoiseSensorManager(this){ available, value ->
+            isNoiseSensorAvailable = available
+            noiseValue = value
+            Log.i("test", "Noise sensor value: " + value)
+        }
+        noiseSensorManager.init()
+    }
+
+    fun stopNoiseSensor() {
+        noiseSensorManager?.end()
     }
 
     private fun sendBatteryLowNotification() {

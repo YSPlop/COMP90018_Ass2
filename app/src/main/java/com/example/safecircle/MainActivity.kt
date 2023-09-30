@@ -3,6 +3,7 @@ package com.example.safecircle
 import android.content.Intent
 import android.app.NotificationChannel
 import android.app.NotificationManager
+import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -21,15 +22,15 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.core.content.ContextCompat
 import androidx.navigation.compose.rememberNavController
 
-import com.example.safecircle.services.LocationPushService
 import com.example.safecircle.sensors.ForegroundSensorService
 
 import com.example.safecircle.ui.theme.SafeCircleTheme
 
 class MainActivity : ComponentActivity() {
 
-    val requestPermissionLauncher =
+    private val requestRecordAudioPermissionLauncher =
         registerForActivityResult(ActivityResultContracts.RequestPermission()) {
+            ForegroundSensorService.getInstance().startNoiseSensor()
         }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -45,22 +46,22 @@ class MainActivity : ComponentActivity() {
             manager.createNotificationChannel(channel)
         }
 
-        when {
-            ContextCompat.checkSelfPermission(
-                this,
-                Manifest.permission.RECORD_AUDIO
-            ) == PackageManager.PERMISSION_GRANTED -> {
-            }
-            else -> {
-                requestPermissionLauncher.launch(Manifest.permission.RECORD_AUDIO);
-            }
-        }
-
         val serviceIntent = Intent(this, ForegroundSensorService::class.java)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             startForegroundService(serviceIntent)
         } else {
             startService(serviceIntent)
+        }
+
+        // Check permission and start noise detection sensor.
+        if (ContextCompat.checkSelfPermission(
+                this,
+                android.Manifest.permission.RECORD_AUDIO
+            ) != PackageManager.PERMISSION_GRANTED
+        ) {
+            requestRecordAudioPermissionLauncher.launch(android.Manifest.permission.RECORD_AUDIO);
+        } else {
+            ForegroundSensorService.getInstance().startNoiseSensor()
         }
 
         setContent {
