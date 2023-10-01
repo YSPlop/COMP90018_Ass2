@@ -36,7 +36,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import com.example.safecircle.ChildMap
 import com.example.safecircle.Dashboard
@@ -45,33 +44,6 @@ import com.example.safecircle.Register
 import com.example.safecircle.ui.theme.CyanSecondary
 import com.example.safecircle.ui.theme.YellowPrimary
 import com.example.safecircle.viewmodel.LoginViewModel
-import com.example.safecircle.viewmodel.RegisterViewModel
-import com.google.firebase.database.DatabaseReference
-import com.google.firebase.database.FirebaseDatabase
-import androidx.compose.foundation.Canvas
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
-import androidx.compose.material.RadioButton
-import androidx.compose.foundation.layout.Box
-
-import androidx.compose.foundation.layout.fillMaxSize
-
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-
-import androidx.compose.foundation.shape.RoundedCornerShape
-
-import androidx.compose.material3.ButtonDefaults
-
-import androidx.compose.material3.OutlinedTextField
-
-import androidx.compose.runtime.setValue
-
-import androidx.compose.ui.draw.shadow
-import androidx.compose.ui.text.input.PasswordVisualTransformation
-import com.example.safecircle.database.FamilyDatabase
-import com.example.safecircle.Landing
-
 
 @Composable
 fun LoginScreen(navController: NavHostController, viewModel: LoginViewModel) {

@@ -1,16 +1,26 @@
 package com.example.safecircle.database
 
 import android.util.Log
+import com.example.safecircle.sensors.ForegroundSensorService
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
+import com.google.firebase.database.ktx.snapshots
 
 class FamilyDatabase {
 
     private val database: FirebaseDatabase = FirebaseDatabase.getInstance()
     private val familiesReference: DatabaseReference = database.getReference("families")
+
+    companion object{
+        @Volatile
+        private var instance: FamilyDatabase? = null
+        fun getInstance() = instance ?: synchronized(this){
+            instance ?: FamilyDatabase().also { instance = it }
+        }
+    }
 
     fun familyExists(familyId: String, onComplete: (Boolean) -> Unit) {
 
@@ -216,5 +226,51 @@ class FamilyDatabase {
         })
     }
 
+    /**
+     * Sets the value of the temperature field for a child in a family.
+     */
+    fun setChildTemperature(familyId: String?, username: String?, temperature: Float) {
+        if(familyId == null || username == null) return
 
+        val childrenRef = familiesReference.child(familyId).child("child")
+        childrenRef.orderByChild("username").equalTo(username).addListenerForSingleValueEvent(object: ValueEventListener{
+            override fun onDataChange(snapshot: DataSnapshot) {
+                if(snapshot.exists()) {
+                    for(s in snapshot.children){
+                        s.ref.child("temperature").setValue(temperature)
+                    }
+                }
+            }
+
+            override fun onCancelled(databaseError: DatabaseError) {
+                Log.e("FamilyDatabase", "Error: $databaseError")
+            }
+        })
+
+        Log.i("FamilyDatabase", "Set child temperature: " + temperature)
+    }
+
+    /**
+     * Sets the value of the battery field for a child in a family.
+     */
+    fun setChildBattery(familyId: String?, username: String?, battery: Float) {
+        if(familyId == null || username == null) return
+
+        val childrenRef = familiesReference.child(familyId).child("child")
+        childrenRef.orderByChild("username").equalTo(username).addListenerForSingleValueEvent(object: ValueEventListener{
+            override fun onDataChange(snapshot: DataSnapshot) {
+                if(snapshot.exists()) {
+                    for(s in snapshot.children){
+                        s.ref.child("battery").setValue(battery)
+                    }
+                }
+            }
+
+            override fun onCancelled(databaseError: DatabaseError) {
+                Log.e("FamilyDatabase", "Error: $databaseError")
+            }
+        })
+
+        Log.i("FamilyDatabase", "Set child battery: " + battery)
+    }
 }

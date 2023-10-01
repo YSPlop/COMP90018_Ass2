@@ -1,35 +1,41 @@
 package com.example.safecircle.sensors
 
-import android.util.Log
 import android.annotation.SuppressLint
 import android.content.Context
-import android.content.pm.PackageManager
 import android.media.AudioFormat
 import android.media.AudioRecord
 import android.media.MediaRecorder
-import androidx.core.app.ActivityCompat
 import kotlin.math.abs
 import kotlinx.coroutines.*
 
+/**
+ * Detects ambient noise amplitude at a set interval.
+ */
 class NoiseSensorManager(
     private val context: Context,
-    private val callback: (Boolean, Double) -> Unit
+    private val callback: (Double) -> Unit
 ){
     private var job: Job? = null
     private var recorder: AudioRecord? = null
 
+    /**
+     * Start detecting sound.
+     */
     fun init(){
 
         start();
         job = CoroutineScope(Dispatchers.IO).launch {
             while (isActive) {
                 val amplitude = getAmplitude()
-                callback(true, amplitude)
+                callback(amplitude)
                 delay(100)
             }
         }
     }
 
+    /**
+     * Stop detecting sound.
+     */
     fun end(){
         stop();
         job?.cancel();
@@ -60,6 +66,9 @@ class NoiseSensorManager(
         recorder = null
     }
 
+    /**
+     * Returns the amplitude of the most recently detected noise.
+     */
     fun getAmplitude(): Double{
         if (recorder != null) {
             val buffer = ShortArray(100)

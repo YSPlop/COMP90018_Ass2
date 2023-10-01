@@ -30,7 +30,7 @@ class MainActivity : ComponentActivity() {
 
     private val requestRecordAudioPermissionLauncher =
         registerForActivityResult(ActivityResultContracts.RequestPermission()) {
-            ForegroundSensorService.getInstance().startNoiseSensor()
+            ForegroundSensorService.getInstance()?.startNoiseSensor()
         }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -61,7 +61,7 @@ class MainActivity : ComponentActivity() {
         ) {
             requestRecordAudioPermissionLauncher.launch(android.Manifest.permission.RECORD_AUDIO);
         } else {
-            ForegroundSensorService.getInstance().startNoiseSensor()
+            ForegroundSensorService.getInstance()?.startNoiseSensor()
         }
 
         setContent {
