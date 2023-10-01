@@ -10,6 +10,9 @@ import androidx.compose.foundation.text.ClickableText
 import androidx.compose.material3.Button
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -29,6 +32,29 @@ import com.example.safecircle.viewmodel.LoginViewModel
 import com.example.safecircle.viewmodel.RegisterViewModel
 import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.FirebaseDatabase
+import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
+import androidx.compose.material.RadioButton
+import androidx.compose.foundation.layout.Box
+
+import androidx.compose.foundation.layout.fillMaxSize
+
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+
+import androidx.compose.foundation.shape.RoundedCornerShape
+
+import androidx.compose.material3.ButtonDefaults
+
+import androidx.compose.material3.OutlinedTextField
+
+import androidx.compose.runtime.setValue
+
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.text.input.PasswordVisualTransformation
+import com.example.safecircle.database.FamilyDatabase
+import com.example.safecircle.Landing
 
 
 @Composable
@@ -41,19 +67,13 @@ fun LoginScreen(navController: NavHostController, viewModel: LoginViewModel) {
     var showErrorDialog by remember { mutableStateOf(false) }
 
     Box(modifier = Modifier.fillMaxSize()) {
-        // Drawing the background
         RegisterBackgorundColor()
-        // Arranging the content
         Column(
             modifier = Modifier.fillMaxSize(),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
+            RegisterBanner()
 
-            // Header Banner with img and Text
-            RegisterBanner();
-
-            // Login Input Field
-            // Login Input Field
             Column(
                 modifier = Modifier
                     .fillMaxSize()
@@ -65,7 +85,6 @@ fun LoginScreen(navController: NavHostController, viewModel: LoginViewModel) {
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.SpaceEvenly
             ) {
-
                 // Radio buttons for parent/kid
                 Row(
                     modifier = Modifier.padding(16.dp),
@@ -181,7 +200,11 @@ fun LoginScreen(navController: NavHostController, viewModel: LoginViewModel) {
                         familyDatabase.familyExists(familyID) { exists ->
                             if (exists) {
                                 if (loginType == "parent") {
-                                    viewModel.loginAsParent(familyID, username, password) { successfulLogin ->
+                                    viewModel.loginAsParent(
+                                        familyID,
+                                        username,
+                                        password
+                                    ) { successfulLogin ->
                                         if (successfulLogin) {
                                             navController.navigate(Landing.route)
                                         } else {
@@ -217,17 +240,10 @@ fun LoginScreen(navController: NavHostController, viewModel: LoginViewModel) {
                 RegisterText(navController);
 
             }
-
-
-    ) {
-        Text(text = "LoginScreen")
-        Button(onClick = { navController.navigate(Dashboard.route) }) {
-            Text(text = "Login")
         }
-        RegisterText(navController = navController)
     }
-
 }
+
 
 @Composable
 fun RegisterText(navController: NavHostController) {
@@ -247,7 +263,10 @@ fun RegisterText(navController: NavHostController) {
             horizontalArrangement = Arrangement.Center
         ) {
             ClickableText(
-                text = AnnotatedString("Register", SpanStyle(color = CyanSecondary, fontWeight = FontWeight.Bold)),
+                text = AnnotatedString(
+                    "Register",
+                    SpanStyle(color = CyanSecondary, fontWeight = FontWeight.Bold)
+                ),
                 onClick = { offset ->
                     navController.navigate(Register.route)
                 },
@@ -264,5 +283,4 @@ fun RegisterText(navController: NavHostController) {
             )
         }
     }
-
 }
