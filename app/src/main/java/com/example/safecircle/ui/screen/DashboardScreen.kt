@@ -1,6 +1,7 @@
 package com.example.safecircle.ui.screen
 
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.*
@@ -31,7 +32,16 @@ import androidx.compose.material3.Text
 import androidx.compose.foundation.clickable
 import androidx.compose.ui.unit.dp
 import androidx.compose.material3.DrawerState
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.sp
+import com.example.safecircle.database.Family
+import com.example.safecircle.database.FamilyDatabase
+import com.example.safecircle.database.PersonalDetails
+import com.example.safecircle.utils.PreferenceHelper
+
 data class PersonInfo(
     val name: String,
     val location: String,
@@ -84,6 +94,20 @@ fun DashboardScreen(navController: NavHostController) {
         PersonInfo("Jane Smith", "location2", "28°C", "65%"),
     )
 
+    val context = LocalContext.current
+    val preferenceHelper = PreferenceHelper(context)
+    val familyID = preferenceHelper.getFamilyID()
+    val (childrenList, setChildrenList) = remember { mutableStateOf(listOf<PersonInfo>()) }
+    val familyDatabase: FamilyDatabase = FamilyDatabase()
+
+    // Fetch children details on screen load
+    LaunchedEffect(Unit) {
+        familyDatabase.getAllChildrenInfo(familyID!!) { children ->
+            Log.i("test", "$children")
+            setChildrenList(children)
+        }
+    }
+
     ModalNavigationDrawer(
         drawerState = drawerState,
         drawerContent = { AppDrawer(drawerState, navController) }
@@ -95,7 +119,7 @@ fun DashboardScreen(navController: NavHostController) {
                     .fillMaxWidth()
                     .padding(16.dp)
             ) {
-                items(persons) { person ->
+                items(childrenList) { person ->
                     PersonCard(person = person) {
 
                     }
