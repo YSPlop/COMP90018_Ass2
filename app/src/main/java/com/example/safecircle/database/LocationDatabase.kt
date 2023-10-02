@@ -1,7 +1,7 @@
-package com.example.safecircle.db
+package com.example.safecircle.database
 
 import android.util.Log
-import com.example.safecircle.db.dtos.LocationDto
+import com.example.safecircle.database.dtos.LocationDto
 import com.google.android.gms.maps.model.LatLng
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
