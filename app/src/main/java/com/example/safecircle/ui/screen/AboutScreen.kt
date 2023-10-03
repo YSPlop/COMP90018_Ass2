@@ -6,6 +6,7 @@ import androidx.compose.animation.core.spring
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -77,6 +78,86 @@ fun AboutScreen(navController: NavHostController) {
                 RecyclerView(listOf("About Us", "Parent View", "Children View", "Creators of the App", "Contact Us"))
             }
         }
+    }
+}
+@Composable
+fun CreatorInformation(name: String, email: String, description: String){
+    ElevatedCard (
+        modifier = Modifier
+            .padding(
+                vertical = 10.dp,
+
+                )
+            .fillMaxWidth(),
+        colors = CardDefaults.cardColors(),
+    ){
+        Text(
+            buildAnnotatedString(
+            ) {
+                withStyle(style = SpanStyle(
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 12.sp,
+                )) {
+                    append("Name: ")
+                }
+                withStyle(SpanStyle(
+                    fontSize = 12.sp,
+                )){
+                    append(name)
+                }
+
+                withStyle(style = SpanStyle(
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 12.sp,
+                )) {
+                    append("\nContact Email: ")
+                }
+                withStyle(SpanStyle(
+                    fontSize = 12.sp,
+                )){
+                    append(email)
+                }
+
+                withStyle(style = SpanStyle(
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 12.sp,
+                )) {
+                    append("\nDescription: ")
+                }
+                withStyle(SpanStyle(
+                    fontSize = 12.sp,
+                )){
+                    append(description)
+                }
+
+            },
+
+
+            modifier = Modifier
+                .padding(horizontal = 10.dp, vertical = 10.dp)
+        )
+
+    }
+}
+@Composable
+fun InformationView(textValue: String){
+    ElevatedCard (
+        modifier = Modifier
+            .padding(
+                vertical = 10.dp,
+
+                )
+            .fillMaxWidth(),
+        colors = CardDefaults.cardColors(),
+    ){
+        Text(
+            text = textValue,
+            fontSize = 12.sp,
+            fontWeight = FontWeight.SemiBold,
+            modifier = Modifier
+                .padding(horizontal = 10.dp, vertical = 10.dp)
+            ,
+        )
     }
 }
 
@@ -219,87 +300,6 @@ fun ListItem(name: String){
 }
 
 @Composable
-fun CreatorInformation(name: String, email: String, description: String){
-    ElevatedCard (
-        modifier = Modifier
-            .padding(
-                vertical = 10.dp,
-
-                )
-            .fillMaxWidth(),
-        colors = CardDefaults.cardColors(),
-    ){
-        Text(
-            buildAnnotatedString(
-            ) {
-                withStyle(style = SpanStyle(
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 12.sp,
-                )) {
-                    append("Name: ")
-                }
-                withStyle(SpanStyle(
-                    fontSize = 12.sp,
-                    )){
-                    append(name)
-                }
-
-                withStyle(style = SpanStyle(
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 12.sp,
-                )) {
-                    append("\nContact Email: ")
-                }
-                withStyle(SpanStyle(
-                    fontSize = 12.sp,
-                )){
-                    append(email)
-                }
-
-                withStyle(style = SpanStyle(
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 12.sp,
-                )) {
-                    append("\nDescription: ")
-                }
-                withStyle(SpanStyle(
-                    fontSize = 12.sp,
-                )){
-                    append(description)
-                }
-
-            },
-
-
-            modifier = Modifier
-                    .padding(horizontal = 10.dp, vertical = 10.dp)
-        )
-
-    }
-}
-@Composable
-fun InformationView(textValue: String){
-    ElevatedCard (
-        modifier = Modifier
-            .padding(
-                vertical = 10.dp,
-
-                )
-            .fillMaxWidth(),
-        colors = CardDefaults.cardColors(),
-    ){
-        Text(
-            text = textValue,
-            fontSize = 12.sp,
-            fontWeight = FontWeight.SemiBold,
-            modifier = Modifier
-                .padding(horizontal = 10.dp, vertical = 10.dp)
-            ,
-        )
-    }
-}
-
-@Composable
 fun RecyclerView(names: List<String> = List(5) {"$it"}){
 
     // The difference between column and lazy column
@@ -308,7 +308,9 @@ fun RecyclerView(names: List<String> = List(5) {"$it"}){
     LazyColumn(
         modifier = Modifier
             .padding(vertical = 4.dp)
-//            .fillMaxWidth()
+            .fillMaxWidth()
+            .fillMaxHeight()
+
     ){
         items(items = names){name ->
             ListItem(name = name)
