@@ -6,13 +6,9 @@ import android.app.Service
 import android.content.Intent
 import android.os.IBinder
 import android.util.Log
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.LocationOn
-import androidx.compose.material.icons.outlined.LocationOn
-import androidx.compose.material3.Icon
 import androidx.core.app.NotificationCompat
 import com.example.safecircle.R
-import com.example.safecircle.db.FamilyLocationDao
+import com.example.safecircle.database.FamilyLocationDao
 import com.example.safecircle.interfaces.LocationClient
 import com.example.safecircle.receivers.LocationServiceNotificationReceiver
 import com.example.safecircle.utils.DefaultLocationClient
