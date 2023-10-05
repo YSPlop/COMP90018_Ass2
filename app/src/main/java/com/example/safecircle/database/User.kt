@@ -18,7 +18,9 @@ data class Parent(
 data class Child(
     override var username: String? = null,
     var code: String? = null,
-    var locationId: String? = null
+    var locationId: String? = null,
+    var temperature: Float = 0f,
+    var battery: Float = 100f
 ) : User()
 
 data class Family(

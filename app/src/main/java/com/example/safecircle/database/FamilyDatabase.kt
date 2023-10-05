@@ -1,16 +1,27 @@
 package com.example.safecircle.database
 
 import android.util.Log
+import com.example.safecircle.sensors.ForegroundSensorService
+import com.example.safecircle.ui.screen.PersonInfo
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
+import com.google.firebase.database.ktx.snapshots
 
 class FamilyDatabase {
 
     private val database: FirebaseDatabase = FirebaseDatabase.getInstance()
     private val familiesReference: DatabaseReference = database.getReference("families")
+
+    companion object {
+        @Volatile
+        private var instance: FamilyDatabase? = null
+        fun getInstance() = instance ?: synchronized(this) {
+            instance ?: FamilyDatabase().also { instance = it }
+        }
+    }
 
     fun familyExists(familyId: String, onComplete: (Boolean) -> Unit) {
 
@@ -25,59 +36,73 @@ class FamilyDatabase {
             }
         })
     }
-    
-    fun usernamePasswordMatch(username: String, password: String, family: String, onComplete: (Boolean, String?) -> Unit) {
+
+    fun usernamePasswordMatch(
+        username: String,
+        password: String,
+        family: String,
+        onComplete: (Boolean, String?) -> Unit
+    ) {
         val parentsRef = familiesReference.child(family).child("parents")
 
-        parentsRef.orderByChild("username").equalTo(username).addListenerForSingleValueEvent(object : ValueEventListener {
-            override fun onDataChange(dataSnapshot: DataSnapshot) {
-                if (dataSnapshot.exists()) {
-                    for (parentSnapshot in dataSnapshot.children) {
-                        val dbUsername = parentSnapshot.child("username").getValue(String::class.java)
-                        val dbPassword = parentSnapshot.child("password").getValue(String::class.java)
+        parentsRef.orderByChild("username").equalTo(username)
+            .addListenerForSingleValueEvent(object : ValueEventListener {
+                override fun onDataChange(dataSnapshot: DataSnapshot) {
+                    if (dataSnapshot.exists()) {
+                        for (parentSnapshot in dataSnapshot.children) {
+                            val dbUsername =
+                                parentSnapshot.child("username").getValue(String::class.java)
+                            val dbPassword =
+                                parentSnapshot.child("password").getValue(String::class.java)
 
-                        if (username == dbUsername && password == dbPassword) {
-                            onComplete(true, parentSnapshot.key)  // Return the key (objectID)
-                            return
+                            if (username == dbUsername && password == dbPassword) {
+                                onComplete(true, parentSnapshot.key)  // Return the key (objectID)
+                                return
+                            }
                         }
+                        onComplete(false, null)  // No match found after iterating.
+                    } else {
+                        onComplete(false, null)  // No user found with the given username.
                     }
-                    onComplete(false, null)  // No match found after iterating.
-                } else {
-                    onComplete(false, null)  // No user found with the given username.
                 }
-            }
 
-            override fun onCancelled(databaseError: DatabaseError) {
-                onComplete(false, null)  // Some error occurred.
-            }
-        })
+                override fun onCancelled(databaseError: DatabaseError) {
+                    onComplete(false, null)  // Some error occurred.
+                }
+            })
     }
 
     fun codeMatch(code: String, family: String, onComplete: (Boolean, String?, String?) -> Unit) {
         val childRef = familiesReference.child(family).child("child")
 
-        childRef.orderByChild("code").equalTo(code).addListenerForSingleValueEvent(object : ValueEventListener {
-            override fun onDataChange(dataSnapshot: DataSnapshot) {
-                if (dataSnapshot.exists()) {
-                    for (childSnapshot in dataSnapshot.children) {
-                        val dbCode = childSnapshot.child("code").getValue(String::class.java)
+        childRef.orderByChild("code").equalTo(code)
+            .addListenerForSingleValueEvent(object : ValueEventListener {
+                override fun onDataChange(dataSnapshot: DataSnapshot) {
+                    if (dataSnapshot.exists()) {
+                        for (childSnapshot in dataSnapshot.children) {
+                            val dbCode = childSnapshot.child("code").getValue(String::class.java)
 
-                        if (code == dbCode) {
-                            val username = childSnapshot.child("username").getValue(String::class.java)  // Fetch the username
-                            onComplete(true, childSnapshot.key, username)  // Return the key (objectID) and username
-                            return
+                            if (code == dbCode) {
+                                val username = childSnapshot.child("username")
+                                    .getValue(String::class.java)  // Fetch the username
+                                onComplete(
+                                    true,
+                                    childSnapshot.key,
+                                    username
+                                )  // Return the key (objectID) and username
+                                return
+                            }
                         }
+                        onComplete(false, null, null)  // No match found after iterating.
+                    } else {
+                        onComplete(false, null, null)  // No entry found with the given code.
                     }
-                    onComplete(false, null, null)  // No match found after iterating.
-                } else {
-                    onComplete(false, null, null)  // No entry found with the given code.
                 }
-            }
 
-            override fun onCancelled(databaseError: DatabaseError) {
-                onComplete(false, null, null)  // Some error occurred.
-            }
-        })
+                override fun onCancelled(databaseError: DatabaseError) {
+                    onComplete(false, null, null)  // Some error occurred.
+                }
+            })
     }
 
     fun addParentToFamily(familyId: String, parent: Parent, onSuccess: (String) -> Unit) {
@@ -93,9 +118,15 @@ class FamilyDatabase {
             }
     }
 
-    fun addNewParentToFamily(familyId: String, parent: Parent, onSuccess: () -> Unit, onFailure: (String) -> Unit) {
+    fun addNewParentToFamily(
+        familyId: String,
+        parent: Parent,
+        onSuccess: () -> Unit,
+        onFailure: (String) -> Unit
+    ) {
         // First, check if there is a parent with the same username under the family
-        familiesReference.child(familyId).child("parents").orderByChild("username").equalTo(parent.username)
+        familiesReference.child(familyId).child("parents").orderByChild("username")
+            .equalTo(parent.username)
             .addListenerForSingleValueEvent(object : ValueEventListener {
                 override fun onDataChange(dataSnapshot: DataSnapshot) {
                     // If a parent with the same username exists, then notify the caller
@@ -112,9 +143,13 @@ class FamilyDatabase {
                     }
 
                     // Otherwise, add the parent to the database using the generated parent ID
-                    familiesReference.child(familyId).child("parents").child(parentId).setValue(parent)
+                    familiesReference.child(familyId).child("parents").child(parentId)
+                        .setValue(parent)
                         .addOnSuccessListener {
-                            Log.i("test", "New parent added to Firebase Database under 'parents' key")
+                            Log.i(
+                                "test",
+                                "New parent added to Firebase Database under 'parents' key"
+                            )
                             onSuccess()
                         }
                         .addOnFailureListener { e ->
@@ -124,15 +159,25 @@ class FamilyDatabase {
                 }
 
                 override fun onCancelled(databaseError: DatabaseError) {
-                    Log.e("test", "Database error when checking for parent username", databaseError.toException())
+                    Log.e(
+                        "test",
+                        "Database error when checking for parent username",
+                        databaseError.toException()
+                    )
                     onFailure("Failed due to database error.")
                 }
             })
     }
 
     // Function to add/update personal details to Firebase
-    fun savePersonalDetails(familyId: String, objectId: String, details: PersonalDetails, onComplete: (Boolean, String?) -> Unit) {
-        familiesReference.child(familyId).child("parents").child(objectId).child("personalDetails").setValue(details)
+    fun savePersonalDetails(
+        familyId: String,
+        objectId: String,
+        details: PersonalDetails,
+        onComplete: (Boolean, String?) -> Unit
+    ) {
+        familiesReference.child(familyId).child("parents").child(objectId).child("personalDetails")
+            .setValue(details)
             .addOnSuccessListener {
                 onComplete(true, "Details saved successfully!")
             }
@@ -142,42 +187,79 @@ class FamilyDatabase {
     }
 
     // Function to retrieve personal details from Firebase
-    fun getPersonalDetails(familyId: String, objectId: String, onComplete: (PersonalDetails?) -> Unit) {
-        familiesReference.child(familyId).child("parents").child(objectId).child("personalDetails").addListenerForSingleValueEvent(object :
-            ValueEventListener {
+    fun getPersonalDetails(
+        familyId: String,
+        objectId: String,
+        onComplete: (PersonalDetails?) -> Unit
+    ) {
+        familiesReference.child(familyId).child("parents").child(objectId).child("personalDetails")
+            .addListenerForSingleValueEvent(object :
+                ValueEventListener {
+                override fun onDataChange(dataSnapshot: DataSnapshot) {
+                    val details = dataSnapshot.getValue(PersonalDetails::class.java)
+                    onComplete(details)
+                }
+
+                override fun onCancelled(databaseError: DatabaseError) {
+                    onComplete(null)
+                }
+            })
+    }
+
+    fun getAllParentsDetails(familyId: String, onComplete: (List<PersonalDetails>) -> Unit) {
+        val parentsRef = familiesReference.child(familyId).child("parents")
+
+        parentsRef.addListenerForSingleValueEvent(object : ValueEventListener {
             override fun onDataChange(dataSnapshot: DataSnapshot) {
-                val details = dataSnapshot.getValue(PersonalDetails::class.java)
-                onComplete(details)
+                val parentsList = mutableListOf<PersonalDetails>()
+
+                dataSnapshot.children.forEach { parentSnapshot ->
+                    val parent = parentSnapshot.getValue(Parent::class.java)
+                    parent?.personalDetails?.let { parentsList.add(it) }
+                }
+
+                onComplete(parentsList)
             }
 
+
             override fun onCancelled(databaseError: DatabaseError) {
-                onComplete(null)
+                // Handle the error accordingly, possibly calling onComplete with an empty list.
+                onComplete(listOf())
             }
         })
     }
 
-        fun getAllParentsDetails(familyId: String, onComplete: (List<PersonalDetails>) -> Unit) {
-            val parentsRef = familiesReference.child(familyId).child("parents")
+    fun getAllChildrenInfo(familyId: String, onComplete: (List<PersonInfo>) -> Unit) {
+        val childrenRef = familiesReference.child(familyId).child("child")
+        childrenRef.addListenerForSingleValueEvent(object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                val childrenList = mutableListOf<PersonInfo>()
 
-            parentsRef.addListenerForSingleValueEvent(object : ValueEventListener {
-                override fun onDataChange(dataSnapshot: DataSnapshot) {
-                    val parentsList = mutableListOf<PersonalDetails>()
-
-                    dataSnapshot.children.forEach { parentSnapshot ->
-                        val parent = parentSnapshot.getValue(Parent::class.java)
-                        parent?.personalDetails?.let { parentsList.add(it) }
+                for (childSnapshot in snapshot.children) {
+                    val child = childSnapshot.getValue(Child::class.java)
+                    if (child != null) {
+                        val name: String =
+                            if (child.username != null) child.username!! else "Unknown"
+                        childrenList.add(
+                            PersonInfo(
+                                name,
+                                "placeholder location",
+                                child.temperature.toString(),
+                                child.battery.toString()
+                            )
+                        )
                     }
-
-                    onComplete(parentsList)
                 }
 
+                onComplete(childrenList)
+            }
 
-                override fun onCancelled(databaseError: DatabaseError) {
-                    // Handle the error accordingly, possibly calling onComplete with an empty list.
-                    onComplete(listOf())
-                }
-            })
-        }
+            override fun onCancelled(databaseError: DatabaseError) {
+                Log.e("test", "Error fetching parent", databaseError.toException())
+                onComplete(listOf())
+            }
+        })
+    }
 
 
     fun addChildToFamily(familyId: String, child: Child) {
@@ -193,7 +275,8 @@ class FamilyDatabase {
     }
 
     fun updateParentTemperature(familyId: String, username: String, temperature: Float) {
-        val parentRef = familiesReference.child(familyId).child("parents").orderByChild("username").equalTo(username)
+        val parentRef = familiesReference.child(familyId).child("parents").orderByChild("username")
+            .equalTo(username)
 
         parentRef.addListenerForSingleValueEvent(object : ValueEventListener {
             override fun onDataChange(dataSnapshot: DataSnapshot) {
@@ -216,5 +299,53 @@ class FamilyDatabase {
         })
     }
 
+    /**
+     * Sets the value of the temperature field for a child in a family.
+     */
+    fun setChildTemperature(familyId: String?, username: String?, temperature: Float) {
+        if (familyId == null || username == null) return
 
+        val childrenRef = familiesReference.child(familyId).child("child")
+        childrenRef.orderByChild("username").equalTo(username)
+            .addListenerForSingleValueEvent(object : ValueEventListener {
+                override fun onDataChange(snapshot: DataSnapshot) {
+                    if (snapshot.exists()) {
+                        for (s in snapshot.children) {
+                            s.ref.child("temperature").setValue(temperature)
+                        }
+                    }
+                }
+
+                override fun onCancelled(databaseError: DatabaseError) {
+                    Log.e("FamilyDatabase", "Error: $databaseError")
+                }
+            })
+
+        Log.i("FamilyDatabase", "Set child temperature: " + temperature)
+    }
+
+    /**
+     * Sets the value of the battery field for a child in a family.
+     */
+    fun setChildBattery(familyId: String?, username: String?, battery: Float) {
+        if (familyId == null || username == null) return
+
+        val childrenRef = familiesReference.child(familyId).child("child")
+        childrenRef.orderByChild("username").equalTo(username)
+            .addListenerForSingleValueEvent(object : ValueEventListener {
+                override fun onDataChange(snapshot: DataSnapshot) {
+                    if (snapshot.exists()) {
+                        for (s in snapshot.children) {
+                            s.ref.child("battery").setValue(battery)
+                        }
+                    }
+                }
+
+                override fun onCancelled(databaseError: DatabaseError) {
+                    Log.e("FamilyDatabase", "Error: $databaseError")
+                }
+            })
+
+        Log.i("FamilyDatabase", "Set child battery: " + battery)
+    }
 }

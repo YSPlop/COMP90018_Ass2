@@ -3,10 +3,12 @@ package com.example.safecircle
 import android.content.Intent
 import android.app.NotificationChannel
 import android.app.NotificationManager
+import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -20,12 +22,17 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.core.content.ContextCompat
 import androidx.navigation.compose.rememberNavController
 
-import com.example.safecircle.services.LocationPushService
 import com.example.safecircle.sensors.ForegroundSensorService
 
 import com.example.safecircle.ui.theme.SafeCircleTheme
 
 class MainActivity : ComponentActivity() {
+
+    private val requestRecordAudioPermissionLauncher =
+        registerForActivityResult(ActivityResultContracts.RequestPermission()) {
+            ForegroundSensorService.getInstance()?.startNoiseSensor()
+        }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         // Notification Channel
@@ -46,6 +53,17 @@ class MainActivity : ComponentActivity() {
             startService(serviceIntent)
         }
 
+        // Check permission and start noise detection sensor.
+        if (ContextCompat.checkSelfPermission(
+                this,
+                android.Manifest.permission.RECORD_AUDIO
+            ) != PackageManager.PERMISSION_GRANTED
+        ) {
+            requestRecordAudioPermissionLauncher.launch(android.Manifest.permission.RECORD_AUDIO);
+        } else {
+            ForegroundSensorService.getInstance()?.startNoiseSensor()
+        }
+
         setContent {
             SafeCircleTheme {
                 // A surface container using the 'background' color from the theme
@@ -59,6 +77,7 @@ class MainActivity : ComponentActivity() {
             }
         }
     }
+
     override fun onPause() {
         super.onPause()
         //stopService(Intent(this, ForegroundSensorService::class.java))

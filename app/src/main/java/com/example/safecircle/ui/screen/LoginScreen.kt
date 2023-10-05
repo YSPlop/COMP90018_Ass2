@@ -45,7 +45,6 @@ import com.example.safecircle.ui.theme.CyanSecondary
 import com.example.safecircle.ui.theme.YellowPrimary
 import com.example.safecircle.viewmodel.LoginViewModel
 
-
 @Composable
 fun LoginScreen(navController: NavHostController, viewModel: LoginViewModel) {
     var loginType by remember { mutableStateOf("parent") }
@@ -81,7 +80,6 @@ fun LoginScreen(navController: NavHostController, viewModel: LoginViewModel) {
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.SpaceEvenly
             ) {
-
                 // Radio buttons for parent/kid
                 Row(
                     modifier = Modifier.padding(16.dp),
@@ -258,6 +256,7 @@ fun LoginScreen(navController: NavHostController, viewModel: LoginViewModel) {
         )
     }
 }
+
 
 @Composable
 fun RegisterText(navController: NavHostController) {
