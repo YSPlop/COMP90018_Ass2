@@ -65,7 +65,7 @@ fun AboutScreen(navController: NavHostController) {
                 .fillMaxSize()
                 .background(color = CyanSecondary)
         ) {
-            AppTopBar(drawerState, "Help")
+            AppTopBar(drawerState, "About")
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 modifier = Modifier
