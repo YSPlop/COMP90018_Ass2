@@ -21,17 +21,16 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.core.content.ContextCompat
 import androidx.navigation.compose.rememberNavController
-
 import com.example.safecircle.sensors.ForegroundSensorService
-
+import com.example.safecircle.services.LocationPushService
 import com.example.safecircle.ui.theme.SafeCircleTheme
+import com.example.safecircle.utils.PreferenceHelper
 
 class MainActivity : ComponentActivity() {
-
-    private val requestRecordAudioPermissionLauncher =
-        registerForActivityResult(ActivityResultContracts.RequestPermission()) {
-            ForegroundSensorService.getInstance()?.startNoiseSensor()
-        }
+//    private val requestRecordAudioPermissionLauncher =
+//        registerForActivityResult(ActivityResultContracts.RequestPermission()) {
+//            ForegroundSensorService.getInstance()?.startNoiseSensor()
+//        }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -46,23 +45,23 @@ class MainActivity : ComponentActivity() {
             manager.createNotificationChannel(channel)
         }
 
-        val serviceIntent = Intent(this, ForegroundSensorService::class.java)
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            startForegroundService(serviceIntent)
-        } else {
-            startService(serviceIntent)
-        }
+//        val serviceIntent = Intent(this, ForegroundSensorService::class.java)
+//        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+//            startForegroundService(serviceIntent)
+//        } else {
+//            startService(serviceIntent)
+//        }
 
         // Check permission and start noise detection sensor.
-        if (ContextCompat.checkSelfPermission(
-                this,
-                android.Manifest.permission.RECORD_AUDIO
-            ) != PackageManager.PERMISSION_GRANTED
-        ) {
-            requestRecordAudioPermissionLauncher.launch(android.Manifest.permission.RECORD_AUDIO);
-        } else {
-            ForegroundSensorService.getInstance()?.startNoiseSensor()
-        }
+//        if (ContextCompat.checkSelfPermission(
+//                this,
+//                android.Manifest.permission.RECORD_AUDIO
+//            ) != PackageManager.PERMISSION_GRANTED
+//        ) {
+//            requestRecordAudioPermissionLauncher.launch(android.Manifest.permission.RECORD_AUDIO);
+//        } else {
+//            ForegroundSensorService.getInstance()?.startNoiseSensor()
+//        }
 
         setContent {
             SafeCircleTheme {

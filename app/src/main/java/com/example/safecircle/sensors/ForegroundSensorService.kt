@@ -10,9 +10,25 @@ import androidx.compose.runtime.mutableDoubleStateOf
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.platform.LocalContext
 import androidx.core.app.NotificationCompat
 import com.example.safecircle.R
+import com.example.safecircle.database.FamilyLocationDao
 import com.example.safecircle.database.Role
+import com.example.safecircle.interfaces.LocationClient
+import com.example.safecircle.services.LocationPushService
+import com.example.safecircle.utils.DefaultLocationClient
+import com.example.safecircle.utils.PreferenceHelper
+import com.google.android.gms.location.LocationServices
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.cancel
+import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
+import kotlin.time.DurationUnit
+import kotlin.time.toDuration
 
 class ForegroundSensorService: Service()  {
 
@@ -40,15 +56,33 @@ class ForegroundSensorService: Service()  {
     // Updates realtime sensor data to database at a set interval.
     private var sensorDataPushManager: SensorDataPushManager = SensorDataPushManager(this)
 
+    // Properties for location updates
+    private val serviceScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
+    private lateinit var familyId: String
+    private lateinit var memberId: String
+    private lateinit var locationDao: FamilyLocationDao
+    private lateinit var locationClient: LocationClient
+
+
     companion object{
         @Volatile
         private var instance: ForegroundSensorService? = null
         fun getInstance() = instance
     }
 
+    override fun onCreate() {
+        super.onCreate()
+
+        // Initialize location client here, moved from LocationPushService
+        locationClient = DefaultLocationClient(
+            applicationContext,
+            LocationServices.getFusedLocationProviderClient(applicationContext)
+        )
+    }
+
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         val notification = NotificationCompat.Builder(this, "SensorChannel")
-            .setContentTitle("Monitoring Battery & Temperature & Noise")
+            .setContentTitle("Monitoring: Location & Battery & Temperature & Noise")
             .setSmallIcon(R.drawable.family) // replace with your icon
             .build()
 
@@ -77,6 +111,22 @@ class ForegroundSensorService: Service()  {
         sensorDataPushManager.start()
 
         instance = this
+
+        // Start getting location updates
+        val preferenceHelper = PreferenceHelper(this)
+        familyId = preferenceHelper.getFamilyID().toString()
+        memberId = preferenceHelper.getUsername().toString()
+        locationDao = FamilyLocationDao.getInstance(familyId)
+
+        locationClient.getLocationUpdates(10.toDuration(DurationUnit.SECONDS))
+            .catch { e ->
+                Log.e("Location Service", e.toString())
+            }
+            .onEach {
+                Log.d("Location Service", "lat = ${it.latitude}, lng = ${it.longitude}")
+                locationDao.updateCurrentMemberLocation(memberId, it.latitude, it.longitude)
+            }
+            .launchIn(serviceScope)
 
         return START_NOT_STICKY
     }

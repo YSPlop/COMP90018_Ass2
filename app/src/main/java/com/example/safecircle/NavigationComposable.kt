@@ -29,17 +29,16 @@ fun NavigationComposable(navController: NavHostController){
     val username = preferenceHelper.getUsername()
     val role = preferenceHelper.getRole()
 
-//    val startRoute = if (!familyId.isNullOrEmpty() && !username.isNullOrEmpty()) {
-//        if(role == Role.PARENT){
-//            Dashboard.route
-//        }else{
-//            ChildMap.route
-//        }
-//
-//    } else {
-//        Register.route
-//    }
-    val startRoute = Map.route
+    val startRoute = if (!familyId.isNullOrEmpty() && !username.isNullOrEmpty()) {
+        if(role == Role.PARENT){
+            Dashboard.route
+        }else{
+            ChildMap.route
+        }
+
+    } else {
+        Register.route
+    }
     val registerViewModel: RegisterViewModel = remember { RegisterViewModel(context) }
     val loginViewModel: LoginViewModel = remember { LoginViewModel(context) }
 

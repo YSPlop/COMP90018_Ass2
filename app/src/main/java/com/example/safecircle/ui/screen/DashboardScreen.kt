@@ -1,9 +1,13 @@
 package com.example.safecircle.ui.screen
 
-import android.os.Bundle
+import android.app.ActivityManager
+import android.content.Context
+import android.content.Intent
+import android.content.pm.PackageManager
+import android.os.Build
 import android.util.Log
-import androidx.activity.ComponentActivity
-import androidx.activity.compose.setContent
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -19,28 +23,25 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.*
 import androidx.compose.ui.graphics.Color
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Icon
 import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
 import androidx.compose.foundation.clickable
-import androidx.compose.ui.unit.dp
-import androidx.compose.material3.DrawerState
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.unit.sp
-import com.example.safecircle.database.Family
+import androidx.core.content.ContextCompat
+import com.example.safecircle.Map
 import com.example.safecircle.database.FamilyDatabase
-import com.example.safecircle.database.PersonalDetails
+import com.example.safecircle.sensors.ForegroundSensorService
+import com.example.safecircle.ui.components.AppDrawer
+import com.example.safecircle.ui.components.AppTopBar
 import com.example.safecircle.utils.PreferenceHelper
+
 
 data class PersonInfo(
     val name: String,
@@ -48,43 +49,6 @@ data class PersonInfo(
     val temperature: String,
     val phoneBattery: String
 )
-@Composable
-fun AppTopBar(drawerState: DrawerState, title: String) {
-    Surface(
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(80.dp), // Explicitly set height of the Surface
-        color = MaterialTheme.colorScheme.primary
-    ) {
-        Row(
-            modifier = Modifier
-                .fillMaxHeight()
-                .padding(horizontal = 16.dp, vertical = 12.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Text(
-                text = "≡",
-                modifier = Modifier
-                    .padding(end = 16.dp)
-                    .clickable { /* toggle drawer state, open or close */ },
-                color = MaterialTheme.colorScheme.onPrimary,
-                style = MaterialTheme.typography.labelMedium
-            )
-
-            // Increased the size of the title text
-            Text(
-                text = title,
-                color = MaterialTheme.colorScheme.onPrimary,
-                style = MaterialTheme.typography.labelLarge.copy(fontSize = 24.sp) // Adjusted Font Size
-            )
-        }
-    }
-}
-
-@Composable
-fun AppDrawer(drawerState: DrawerState, navController: NavHostController) {
-    Text("Drawer Item 1")
-}
 @Composable
 fun DashboardScreen(navController: NavHostController) {
     val drawerState = rememberDrawerState(DrawerValue.Closed)
@@ -99,6 +63,49 @@ fun DashboardScreen(navController: NavHostController) {
     val familyID = preferenceHelper.getFamilyID()
     val (childrenList, setChildrenList) = remember { mutableStateOf(listOf<PersonInfo>()) }
     val familyDatabase: FamilyDatabase = FamilyDatabase()
+
+    fun isServiceRunning(serviceClass: Class<*>): Boolean {
+        val manager = context.getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
+        for (service in manager.getRunningServices(Integer.MAX_VALUE)) {
+            if (serviceClass.name == service.service.className) {
+                return true
+            }
+        }
+        return false
+    }
+
+    LaunchedEffect(Unit) {
+        // Start ForegroundSensorService
+        if (!isServiceRunning(ForegroundSensorService::class.java)) {
+            val serviceIntent = Intent(context, ForegroundSensorService::class.java)
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                context.startForegroundService(serviceIntent)
+            } else {
+                context.startService(serviceIntent)
+            }
+        }
+    }
+
+    // Check permissions and start service here.
+    val requestRecordAudioPermissionLauncher = rememberUpdatedState(
+        rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) {
+            if (it) {  // Permission granted
+                ForegroundSensorService.getInstance()?.startNoiseSensor()
+            }
+        }
+    ).value
+
+    LaunchedEffect(Unit) {
+        if (ContextCompat.checkSelfPermission(
+                context,
+                android.Manifest.permission.RECORD_AUDIO
+            ) != PackageManager.PERMISSION_GRANTED
+        ) {
+            requestRecordAudioPermissionLauncher.launch(android.Manifest.permission.RECORD_AUDIO)
+        } else {
+            ForegroundSensorService.getInstance()?.startNoiseSensor()
+        }
+    }
 
     // Fetch children details on screen load
     LaunchedEffect(Unit) {
@@ -120,7 +127,7 @@ fun DashboardScreen(navController: NavHostController) {
                     .padding(16.dp)
             ) {
                 items(childrenList) { person ->
-                    PersonCard(person = person) {
+                    PersonCard(person = person, navController) {
 
                     }
                     Spacer(modifier = Modifier.height(8.dp))
@@ -131,7 +138,7 @@ fun DashboardScreen(navController: NavHostController) {
 }
 
 @Composable
-fun PersonCard(person: PersonInfo, onClick: () -> Unit) {
+fun PersonCard(person: PersonInfo, navController: NavHostController, onClick: () -> Unit) {
     Surface(
         modifier = Modifier
             .fillMaxWidth()
@@ -141,7 +148,7 @@ fun PersonCard(person: PersonInfo, onClick: () -> Unit) {
                 shape = RoundedCornerShape(8.dp)
             )
             .border(1.dp, Color.Gray, RoundedCornerShape(8.dp))
-            .clickable(onClick = onClick) // Added clickable modifier here
+            .clickable(onClick = {navController.navigate(Map.route)}) // Added clickable modifier here
     ) {
         Column(
             modifier = Modifier

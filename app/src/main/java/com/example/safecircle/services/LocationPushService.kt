@@ -91,6 +91,7 @@ class LocationPushService : Service() {
     override fun onDestroy() {
         super.onDestroy()
         serviceScope.cancel()
+        Log.i("test", "Foreground service Stopped")
     }
     companion object {
         const val ACTION_START = "ACTION_START"
