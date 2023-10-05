@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.ElevatedButton
@@ -86,8 +87,7 @@ fun CreatorInformation(name: String, email: String, description: String){
         modifier = Modifier
             .padding(
                 vertical = 10.dp,
-
-                )
+            )
             .fillMaxWidth(),
         colors = CardDefaults.cardColors(),
     ){
@@ -139,6 +139,7 @@ fun CreatorInformation(name: String, email: String, description: String){
 
     }
 }
+
 @Composable
 fun InformationView(textValue: String){
     ElevatedCard (
@@ -162,6 +163,90 @@ fun InformationView(textValue: String){
 }
 
 @Composable
+fun ParentTextView(){
+
+    ElevatedCard (
+        modifier = Modifier
+            .padding(
+                vertical = 10.dp,
+
+                )
+            .fillMaxWidth(),
+        colors = CardDefaults.cardColors(),
+    ){
+        Text(
+            text = "At SafeCircle, we understand that being a parent comes with its own unique set of challenges, and ensuring the safety and well-being of your children is always a top priority. That's why we've created a powerful and user-friendly Parent View, designed to provide parents with the tools they need to stay connected and informed.",
+            fontSize = 12.sp,
+            modifier = Modifier
+                .padding(horizontal = 10.dp, vertical = 10.dp)
+            ,
+        )
+    }
+
+    CardWithHeadingAndText(
+        heading = "Location Tracking with Safety Circle:\n",
+        value = "Our Parent View offers an intuitive map interface where you can effortlessly keep track of all your children's locations in real-time. What sets us apart is the Safety Circle feature, which allows you to define a safety zone around your child's location. If your child ventures beyond this designated area, you'll be promptly notified, ensuring you're always aware of their whereabouts."
+    )
+
+    CardWithHeadingAndText(
+        heading = "Customized Filtering:\n",
+        value = "We understand that every family is unique, and your app experience should reflect that. Our handy hamburger menu allows you to filter and view the location of each of your children individually, making it easy to stay updated on each child's activities"
+    )
+
+    CardWithHeadingAndText(
+        heading = "Within the Parent View, you'll also find quick access to essential pages:\n",
+        value = "Help Page: In times of need, our Help Page is just a tap away. It provides a direct line of communication between you and your child, ensuring you can respond swiftly to any situation.\n" +
+                "About Page: Learn more about the inspiration behind our app and the dedicated team that brought it to life.\n" +
+                "Settings Page: Tailor your app experience to your family's unique needs. Here, you can add your children to the \"family,\" set safety distances, establish temperature thresholds for notifications, and provide emergency contact information. It's your toolkit for personalized safety.\n"
+    )
+
+    CardWithHeadingAndText(
+        heading = "Finally\n",
+        value = "At SafeCircle, we believe in putting the power of safety and peace of mind right at your fingertips. Our Parent View is designed to empower parents, allowing you to stay informed, connected, and in control, no matter where life takes your family."
+    )
+
+
+
+}
+
+@Composable
+fun CardWithHeadingAndText(heading: String, value: String) {
+    ElevatedCard(
+        modifier = Modifier
+            .padding(
+                vertical = 10.dp,
+            )
+            .fillMaxWidth(),
+        colors = CardDefaults.cardColors(),
+    ) {
+        Text(
+            buildAnnotatedString(
+            ) {
+                withStyle(
+                    style = SpanStyle(
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 12.sp,
+                    )
+                ) {
+                    append(heading + "\n")
+                }
+                withStyle(
+                    SpanStyle(
+                        fontSize = 12.sp,
+                    )
+                ) {
+                    append(value)
+                }
+            },
+
+
+            modifier = Modifier
+                .padding(horizontal = 10.dp, vertical = 10.dp)
+        )
+    }
+}
+
+@Composable
 fun ListItem(name: String){
 
     val expanded = remember{ mutableStateOf(false) }
@@ -178,11 +263,12 @@ fun ListItem(name: String){
     )
 
     val aboutUsText = "God Loves You"
-    val parentViewText = "This is the parent view text"
-    val childrenViewText = "This is the children view text"
-    val contactUsText = "This is the contact us text"
+    val childrenViewText = "The children will be able to view a map in which they can locate their " +
+            "parents within their surrounding" +
+            "\nIn addition to this the children's devices will be constantly updating the database on" +
+            "their current location, device temperature"
+    val contactUsText = "Please send an email to : xxx123@gmail.com"
     val errorText = "If you see this please contact the creators"
-
 
 
     ElevatedCard(
@@ -236,7 +322,7 @@ fun ListItem(name: String){
                         InformationView(textValue = aboutUsText)
                     }
                     "Parent View" -> {
-                        InformationView(textValue = parentViewText)
+                        ParentTextView()
 
                     }
                     "Children View" -> {
@@ -275,14 +361,14 @@ fun ListItem(name: String){
                                 email = "ysivaraj@student.unimelb.edu.au",
                                 description = "The Information Provider"
                             )
-
-
-
                         }
 
                     }
                     "Contact Us" -> {
-                        InformationView(textValue = contactUsText)
+                        CardWithHeadingAndText(
+                            heading = "Please send an email to :",
+                            value = "xxxyyy123@gmail.com"
+                        )
                     }
                     else -> {
                         InformationView(textValue = errorText)
@@ -292,11 +378,6 @@ fun ListItem(name: String){
         }
 
     }
-
-
-
-
-
 }
 
 @Composable
@@ -320,10 +401,10 @@ fun RecyclerView(names: List<String> = List(5) {"$it"}){
 }
 
 
-@Preview
-@Composable
-private fun ComposablePreview(){
-    SafeCircleTheme {
-        RecyclerView(listOf("About Us", "Parent View", "Children View", "Creators of the App", "Contact Us"))
-    }
-}
+//@Preview
+//@Composable
+//private fun ComposablePreview(){
+//    SafeCircleTheme {
+//        RecyclerView(listOf("About Us", "Parent View", "Children View", "Creators of the App", "Contact Us"))
+//    }
+//}
