@@ -1,5 +1,6 @@
 package com.example.safecircle.ui.screen
 
+import android.graphics.PointF.length
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.spring
@@ -12,6 +13,8 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.text.ClickableText
+import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -29,9 +32,12 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -76,13 +82,14 @@ fun AboutScreen(navController: NavHostController) {
                 // Have a hyperlink to how to keep your children safe
                 // Have a green call button to parents
                 // Do we need more?
-                RecyclerView(listOf("About Us", "Parent View", "Children View", "Creators of the App", "Contact Us"))
+                RecyclerView(listOf("Parent View", "Children View", "Creators of the App", "Contact Us"))
             }
         }
     }
 }
 @Composable
-fun CreatorInformation(name: String, email: String, description: String){
+fun CreatorInformation(name: String, email: String){
+    val fontSizeValue = 13
     ElevatedCard (
         modifier = Modifier
             .padding(
@@ -96,39 +103,39 @@ fun CreatorInformation(name: String, email: String, description: String){
             ) {
                 withStyle(style = SpanStyle(
                     fontWeight = FontWeight.Bold,
-                    fontSize = 12.sp,
+                    fontSize = fontSizeValue.sp,
                 )) {
                     append("Name: ")
                 }
                 withStyle(SpanStyle(
-                    fontSize = 12.sp,
+                    fontSize = 11.sp,
                 )){
                     append(name)
                 }
 
                 withStyle(style = SpanStyle(
                     fontWeight = FontWeight.Bold,
-                    fontSize = 12.sp,
+                    fontSize = fontSizeValue.sp,
                 )) {
                     append("\nContact Email: ")
                 }
                 withStyle(SpanStyle(
-                    fontSize = 12.sp,
+                    fontSize = 11.sp,
                 )){
                     append(email)
                 }
 
-                withStyle(style = SpanStyle(
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 12.sp,
-                )) {
-                    append("\nDescription: ")
-                }
-                withStyle(SpanStyle(
-                    fontSize = 12.sp,
-                )){
-                    append(description)
-                }
+//                withStyle(style = SpanStyle(
+//                    fontWeight = FontWeight.Bold,
+//                    fontSize = fontSizeValue.sp,
+//                )) {
+//                    append("\nDescription: ")
+//                }
+//                withStyle(SpanStyle(
+//                    fontSize = 11.sp,
+//                )){
+//                    append(description)
+//                }
 
             },
 
@@ -142,6 +149,7 @@ fun CreatorInformation(name: String, email: String, description: String){
 
 @Composable
 fun InformationView(textValue: String){
+    val fontSizeValue = 13
     ElevatedCard (
         modifier = Modifier
             .padding(
@@ -153,8 +161,7 @@ fun InformationView(textValue: String){
     ){
         Text(
             text = textValue,
-            fontSize = 12.sp,
-            fontWeight = FontWeight.SemiBold,
+            fontSize = fontSizeValue.sp,
             modifier = Modifier
                 .padding(horizontal = 10.dp, vertical = 10.dp)
             ,
@@ -164,7 +171,7 @@ fun InformationView(textValue: String){
 
 @Composable
 fun ParentTextView(){
-
+    val fontSizeValue = 13
     ElevatedCard (
         modifier = Modifier
             .padding(
@@ -176,7 +183,7 @@ fun ParentTextView(){
     ){
         Text(
             text = "At SafeCircle, we understand that being a parent comes with its own unique set of challenges, and ensuring the safety and well-being of your children is always a top priority. That's why we've created a powerful and user-friendly Parent View, designed to provide parents with the tools they need to stay connected and informed.",
-            fontSize = 12.sp,
+            fontSize = fontSizeValue.sp,
             modifier = Modifier
                 .padding(horizontal = 10.dp, vertical = 10.dp)
             ,
@@ -208,9 +215,35 @@ fun ParentTextView(){
 
 
 }
+@Composable
+fun ContactUsView(heading: String, contactUsText: String){
+    val fontSizeValue = 13
+    ElevatedCard(
+        modifier = Modifier
+            .padding(
+                vertical = 10.dp,
+            )
+            .fillMaxWidth(),
+        colors = CardDefaults.cardColors(),
+    ) {
+        Column (
+            modifier = Modifier
+                .padding(horizontal = 10.dp, vertical = 10.dp)
+        ){
+
+            Text(
+                fontWeight = FontWeight.Bold,
+                text = heading,
+                fontSize = fontSizeValue.sp,
+            )
+            CustomSelectableText(contactUsText)
+        }
+    }
+}
 
 @Composable
 fun CardWithHeadingAndText(heading: String, value: String) {
+    val fontSizeValue = 13
     ElevatedCard(
         modifier = Modifier
             .padding(
@@ -225,14 +258,14 @@ fun CardWithHeadingAndText(heading: String, value: String) {
                 withStyle(
                     style = SpanStyle(
                         fontWeight = FontWeight.Bold,
-                        fontSize = 12.sp,
+                        fontSize = fontSizeValue.sp,
                     )
                 ) {
                     append(heading + "\n")
                 }
                 withStyle(
                     SpanStyle(
-                        fontSize = 12.sp,
+                        fontSize = fontSizeValue.sp,
                     )
                 ) {
                     append(value)
@@ -247,8 +280,22 @@ fun CardWithHeadingAndText(heading: String, value: String) {
 }
 
 @Composable
+fun CustomSelectableText(contactUsText: String) {
+    val fontSizeValue = 13
+    SelectionContainer() {
+        Column() {
+            Text(
+                text = contactUsText,
+                fontSize = fontSizeValue.sp,
+            )
+        }
+    }
+}
+
+@Composable
 fun ListItem(name: String){
 
+    val fontSizeValue = 13
     val expanded = remember{ mutableStateOf(false) }
     val extrapadding by animateDpAsState(
         if (expanded.value) 24.dp else 0.dp,
@@ -265,9 +312,10 @@ fun ListItem(name: String){
     val aboutUsText = "God Loves You"
     val childrenViewText = "The children will be able to view a map in which they can locate their " +
             "parents within their surrounding" +
-            "\nIn addition to this the children's devices will be constantly updating the database on" +
-            "their current location, device temperature"
-    val contactUsText = "Please send an email to : xxx123@gmail.com"
+            "\nIn addition to this the children's devices will be constantly updating the database on " +
+            "their current location, device temperature, background noise and other information that " +
+            "will be extremely useful for the parent"
+    val contactUsText = "ysivaraj@student.unimelb.edu.au" // We can change this
     val errorText = "If you see this please contact the creators"
 
 
@@ -305,7 +353,7 @@ fun ListItem(name: String){
                 Text(
                     if (expanded.value) "Show less" else "Show more",
                     color = Color.Black,
-                    fontSize = 12.sp
+                    fontSize = fontSizeValue.sp
                 )
             }
         }
@@ -334,40 +382,34 @@ fun ListItem(name: String){
                             CreatorInformation(
                                 name = "Luchen Zhou",
                                 email = "luczhou@student.unimelb.edu.au",
-                                description = "The Carry"
                             )
                             CreatorInformation(
                                 name = "Wei Wang",
                                 email = "wangw16@student.unimelb.edu.au",
-                                description = "The UI designer"
                             )
                             CreatorInformation(
                                 name = "Yifan Cheng",
                                 email = "yifacheng@student.unimelb.edu.au",
-                                description = "The Great Support"
                             )
                             CreatorInformation(
                                 name = "Sichen Lu",
                                 email = "sichen2@student.unimelb.edu.au",
-                                description = "The Sensor Implementor"
                             )
                             CreatorInformation(
                                 name = "Chi Zhang",
                                 email = "czzhang5@student.unimelb.edu.au",
-                                description = "The Map Master"
                             )
                             CreatorInformation(
                                 name = "Yukash Sivaraj",
                                 email = "ysivaraj@student.unimelb.edu.au",
-                                description = "The Information Provider"
                             )
                         }
 
                     }
                     "Contact Us" -> {
-                        CardWithHeadingAndText(
+                        ContactUsView(
                             heading = "Please send an email to :",
-                            value = "xxxyyy123@gmail.com"
+                            contactUsText = contactUsText
                         )
                     }
                     else -> {
