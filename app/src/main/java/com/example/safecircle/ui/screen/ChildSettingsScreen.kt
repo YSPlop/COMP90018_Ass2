@@ -11,7 +11,6 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.material.Card
 import androidx.compose.material.Divider
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Face
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -34,7 +33,6 @@ import androidx.compose.ui.graphics.Color
 import com.example.safecircle.ChildMap
 import com.example.safecircle.Login
 import com.example.safecircle.database.FamilyDatabase
-import com.example.safecircle.database.Parent
 import com.example.safecircle.database.PersonalDetails
 
 @OptIn(ExperimentalMaterial3Api::class)
