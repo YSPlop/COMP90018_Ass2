@@ -1,6 +1,7 @@
 package com.example.safecircle.ui.screen
 
 import android.Manifest
+import android.adservices.adid.AdId
 import android.annotation.SuppressLint
 import android.util.Log
 import androidx.compose.foundation.background
@@ -16,12 +17,6 @@ import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Face
 import androidx.compose.material3.Button
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.size
-import androidx.compose.material.Divider
-import androidx.compose.material.Text
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Face
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -47,18 +42,53 @@ import com.google.maps.android.compose.Marker
 import com.google.maps.android.compose.MarkerState
 import com.google.maps.android.compose.rememberCameraPositionState
 import androidx.compose.material3.Slider
+import androidx.compose.runtime.MutableState
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import com.example.safecircle.database.FamilyDatabase
 import com.google.android.gms.location.LocationServices
 import com.google.maps.android.compose.Circle
+import java.util.UUID
 import kotlin.math.atan2
 import kotlin.math.cos
 import kotlin.math.sin
 import kotlin.math.sqrt
 
+data class MarkerProperties(
+    var radius: Float = 100f,
+    var name: String = "Marker"
+)
+
+data class EnhancedMarkerState(
+    val markerState: MarkerState,
+    var properties: MutableState<MarkerProperties> = mutableStateOf(MarkerProperties())
+)
+
 @SuppressLint("MutableCollectionMutableState")
 @OptIn(ExperimentalPermissionsApi::class, ExperimentalMaterial3Api::class)
 @Composable
 fun ChildMapScreen(navController: NavHostController) {
+    val familyDatabase = FamilyDatabase()
+    val uniMelbCoord = LatLng(-37.798919,144.964232)
+    val context = LocalContext.current
+    val preferenceHelper = PreferenceHelper(context)
+    val familyID = preferenceHelper.getFamilyID()
+    val username = preferenceHelper.getUsername()
+    val objectID = preferenceHelper.getObjectId()
+    val role = preferenceHelper.getRole()
+    val emergencyContactNumber = preferenceHelper.getEmergencyContact()
+    val childLocation = remember { mutableStateOf<LatLng?>(null) }
+//    val markers = remember { mutableStateOf(listOf(EnhancedMarkerState(MarkerState(position = uniMelbCoord)))) }
+    val markers = remember { mutableStateOf(mutableMapOf<UUID, EnhancedMarkerState>()) }
+    val selectedMarkerId = remember { mutableStateOf<UUID?>(null) }
+    val fusedLocationClient = LocationServices.getFusedLocationProviderClient(context)
+    val currentLocation = remember { mutableStateOf<LatLng?>(null) }
+    val currentLocationMarker = remember { mutableStateOf<MarkerState?>(null) }
+    val cameraPositionState = rememberCameraPositionState()
+    val selectedMarker = remember { mutableStateOf<MarkerState?>(null) }
+    val showDialog = remember { mutableStateOf(false) }
+    val wasInsideCircle = remember { mutableStateOf(false) }
+
     val locationPermissions = rememberMultiplePermissionsState(
         permissions = listOf(
             Manifest.permission.ACCESS_FINE_LOCATION,
@@ -68,29 +98,6 @@ fun ChildMapScreen(navController: NavHostController) {
     LaunchedEffect(Unit) {
         locationPermissions.launchMultiplePermissionRequest()
     }
-
-    val uniMelbCoord = LatLng(-37.798919,144.964232)
-    val circleRadius = remember { mutableStateOf(1000f) }
-    val context = LocalContext.current
-    val preferenceHelper = PreferenceHelper(context)
-    val familyID = preferenceHelper.getFamilyID()
-    val username = preferenceHelper.getUsername()
-    val objectID = preferenceHelper.getObjectId()
-    val role = preferenceHelper.getRole()
-    val emergencyContactNumber = preferenceHelper.getEmergencyContact()
-    val childLocation = remember { mutableStateOf<LatLng?>(null) }
-    val markers = remember { mutableStateOf(listOf(MarkerState(position = uniMelbCoord))) }
-    val fusedLocationClient = LocationServices.getFusedLocationProviderClient(context)
-    val currentLocation = remember { mutableStateOf<LatLng?>(null) }
-    val currentLocationMarker = remember { mutableStateOf<MarkerState?>(null) }
-    val cameraPositionState = rememberCameraPositionState()
-    val selectedMarker = remember { mutableStateOf<MarkerState?>(null) }
-    val markerRadiusMap = remember { mutableStateOf(mutableMapOf<MarkerState, Float>()) }
-    val markerNameMap = remember { mutableStateOf(mutableMapOf<MarkerState, String>()) }
-    val showDialog = remember { mutableStateOf(false) }
-    val wasInsideCircle = remember { mutableStateOf(false) }
-
-
 
     if (locationPermissions.allPermissionsGranted) {
         LaunchedEffect(Unit) {
@@ -123,7 +130,6 @@ fun ChildMapScreen(navController: NavHostController) {
 
             )
         }
-
         Box(
             modifier = Modifier.fillMaxSize()
         ){
@@ -132,63 +138,50 @@ fun ChildMapScreen(navController: NavHostController) {
                 cameraPositionState = cameraPositionState,
                 onMapClick = { _ ->
                     // Deselect the marker when the map is clicked
-                    selectedMarker.value = null
+                    selectedMarkerId.value = null
                 },
                 onMapLongClick = { latLng -> // 2. Update onMapClick
                     Log.d("ChildMapScreen", "Map clicked at: $latLng")
                     // Add the clicked location as a new marker to the list
-                    val newMarker = MarkerState(position = latLng)
-                    markers.value = markers.value + newMarker
+                    val newMarker = EnhancedMarkerState(MarkerState(position = latLng))
+                    val markerId = UUID.randomUUID()
+                    val updatedMarkers = markers.value.toMutableMap()  // Create a new mutable copy
+                    updatedMarkers[markerId] = newMarker
+                    markers.value = updatedMarkers
+//                    markers.value = markers.value + newMarker
                 }
             ) {
-                markers.value.forEach { markerState ->
-                    currentLocation.value?.let { _ ->
-                        val isInside = isLocationInsideCircle(
-                            currentLocation.value!!,
-                            markerState.position,
-                            markerRadiusMap.value.getOrDefault(markerState, 100f)
-                        )
-                        if (isInside && !wasInsideCircle.value) {
-                            Log.d("ChildMapScreen", "Current location is inside the circle for marker: $markerState")
-//                            showDialog.value = true
-//                            wasInsideCircle.value = true
-                        }
-//                        else if(!isInside){
-//                            wasInsideCircle.value = false
+                markers.value.forEach { entry ->
+                    val markerId = entry.key
+                    val enhancedMarkerState = entry.value
+//                    currentLocation.value?.let { _ ->
+//                        val isInside = isLocationInsideCircle(
+//                            currentLocation.value!!,
+//                            enhancedMarkerState.markerState.position,
+//                            enhancedMarkerState.properties.value.radius
+//                        )
+//                        if (isInside && !wasInsideCircle.value) {
+//                            Log.d("ChildMapScreen", "Current location is inside the circle for marker: ${enhancedMarkerState.markerState}")
+////                            showDialog.value = true
+////                            wasInsideCircle.value = true
 //                        }
-                    }
+////                        else if(!isInside){
+////                            wasInsideCircle.value = false
+////                        }
+//                    }
                     Marker(
-                        state = markerState,
-//                        title = "Custom Marker",
-//                        snippet = "Marker at $markerState.position",
+                        state = enhancedMarkerState.markerState,
                         onClick = {
-                            selectedMarker.value = markerState
-                            if (markerState !in markerRadiusMap.value) {
-                                val updatedMap = markerRadiusMap.value.toMutableMap()
-                                updatedMap[markerState] = 100f
-                                markerRadiusMap.value = updatedMap
-                            }
-                            if (markerState !in markerNameMap.value) {
-                                val updatedNameMap = markerNameMap.value.toMutableMap()
-                                updatedNameMap[markerState] = "Marker"
-                                markerNameMap.value = updatedNameMap
-                            }
+                            selectedMarkerId.value = markerId
+//                            selectedMarker.value = enhancedMarkerState.markerState
                             true
                         }
                     ){}
-                    if (selectedMarker.value == markerState) {
-                        Circle(
-                            center = markerState.position,
-                            radius = markerRadiusMap.value.getOrDefault(markerState, 100f).toDouble(),
-                            fillColor = Color.Blue.copy(alpha = 0.3f)
-                        )
-                    } else {
-                        Circle(
-                            center = markerState.position,
-                            radius = markerRadiusMap.value.getOrDefault(markerState, 100f).toDouble(),
-                            fillColor = Color.Blue.copy(alpha = 0.3f)
-                        )
-                    }
+                    Circle(
+                        center = enhancedMarkerState.markerState.position,
+                        radius = enhancedMarkerState.properties.value.radius.toDouble(),
+                        fillColor = Color.Blue.copy(alpha = 0.3f)
+                    )
                 }
                 currentLocationMarker.value?.let { markerState ->
                     Marker(
@@ -198,7 +191,13 @@ fun ChildMapScreen(navController: NavHostController) {
                     )
                 }
             }
-            if (selectedMarker.value != null) {
+            // Access the selected marker using its UUID
+            val selectedEnhancedMarker = selectedMarkerId.value?.let { markers.value[it] }
+            if (selectedEnhancedMarker != null) {
+                // Find the EnhancedMarkerState corresponding to the selected MarkerState
+//                val selectedEnhancedMarker = markers.value.find { it.markerState == selectedMarker.value }
+                val selectedName = selectedEnhancedMarker?.properties?.value?.name ?: ""
+                val selectedRadius = selectedEnhancedMarker?.properties?.value?.radius ?: 100f
                 Column(
                     modifier = Modifier
                         .align(Alignment.BottomCenter)
@@ -207,31 +206,36 @@ fun ChildMapScreen(navController: NavHostController) {
                         .clip(RoundedCornerShape(topStart = 8.dp, topEnd = 8.dp))
                 ){
                     TextField(
-                        value = markerNameMap.value[selectedMarker.value] ?: "",
-                        onValueChange = {
-                            val updatedNameMap = markerNameMap.value.toMutableMap()
-                            updatedNameMap[selectedMarker.value!!] = it
-                            markerNameMap.value = updatedNameMap
+                        value = selectedName,
+                        onValueChange = { newName ->
+                            val currentProperties = selectedEnhancedMarker?.properties?.value
+                            if (currentProperties != null) {
+                                selectedEnhancedMarker.properties.value = currentProperties.copy(name = newName)
+                            }
                         },
                         label = { Text("Marker Name") },
-                        modifier = Modifier.padding(8.dp).fillMaxWidth()
+                        modifier = Modifier
+                            .padding(8.dp)
+                            .fillMaxWidth()
                     )
 
                     Slider(
-                        value = markerRadiusMap.value[selectedMarker.value] ?: 100f,
+                        value = selectedRadius,
                         onValueChange = { newValue ->
-                            val updatedMap = markerRadiusMap.value.toMutableMap()
-                            updatedMap[selectedMarker.value!!] = newValue
-                            markerRadiusMap.value = updatedMap
+                            val currentProperties = selectedEnhancedMarker?.properties?.value
+                            if (currentProperties != null) {
+                                selectedEnhancedMarker.properties.value = currentProperties.copy(radius = newValue)
+                            }
                         },
                         valueRange = 30f..500f,
                         modifier = Modifier.padding(all = 16.dp)
                     )
-                    Text(text = "${(markerRadiusMap.value[selectedMarker.value] ?: 100f).toInt()} meters",)
+                    Text(text = "${(selectedEnhancedMarker?.properties?.value?.radius ?: 100f).toInt()} meters",)
 
                     Button(
                         onClick = {
-                            markers.value = markers.value.filter { it != selectedMarker.value }
+                            markers.value.remove(selectedMarkerId.value)
+//                            markers.value = markers.value.filter { it != selectedEnhancedMarker }
                             selectedMarker.value = null
                         },
                         modifier = Modifier.padding(top = 8.dp)

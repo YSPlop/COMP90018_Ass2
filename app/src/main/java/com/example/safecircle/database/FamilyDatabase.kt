@@ -2,6 +2,7 @@ package com.example.safecircle.database
 
 import android.util.Log
 import com.example.safecircle.sensors.ForegroundSensorService
+import com.example.safecircle.ui.screen.EnhancedMarkerState
 import com.example.safecircle.ui.screen.PersonInfo
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
