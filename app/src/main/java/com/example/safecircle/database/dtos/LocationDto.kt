@@ -1,4 +1,4 @@
-package com.example.safecircle.db.dtos
+package com.example.safecircle.database.dtos
 
 data class LocationDto(
     val lat: Double? = null,

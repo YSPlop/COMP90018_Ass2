@@ -5,6 +5,7 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import com.example.safecircle.database.FamilyDatabase
 import com.example.safecircle.database.Role
+import com.example.safecircle.sensors.ForegroundSensorService
 import com.example.safecircle.utils.PreferenceHelper
 class LoginViewModel(private val context: Context) : ViewModel() {
 
@@ -22,6 +23,7 @@ class LoginViewModel(private val context: Context) : ViewModel() {
                     setRole(Role.PARENT)
                 }
                 onComplete(true, null)
+                ForegroundSensorService.getInstance()?.setUser(familyID, username, Role.PARENT)
             } else {
                 onComplete(false, "username or password not match")
             }
@@ -38,6 +40,7 @@ class LoginViewModel(private val context: Context) : ViewModel() {
                     setRole(Role.CHILD)
                 }
                 onComplete(true, null)
+                ForegroundSensorService.getInstance()?.setUser(familyID, username, Role.CHILD)
             } else {
                 onComplete(false, "Incorrect Code" )
             }

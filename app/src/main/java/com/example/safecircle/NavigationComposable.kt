@@ -15,6 +15,7 @@ import com.example.safecircle.ui.screen.DashboardScreen
 import com.example.safecircle.ui.screen.HelpScreen
 import com.example.safecircle.ui.screen.LandingScreen
 import com.example.safecircle.ui.screen.LoginScreen
+import com.example.safecircle.ui.screen.MapsScreen
 import com.example.safecircle.ui.screen.RegisterScreen
 import com.example.safecircle.ui.screen.SettingsScreen
 import com.example.safecircle.viewmodel.LoginViewModel
@@ -38,7 +39,6 @@ fun NavigationComposable(navController: NavHostController){
     } else {
         Register.route
     }
-
     val registerViewModel: RegisterViewModel = remember { RegisterViewModel(context) }
     val loginViewModel: LoginViewModel = remember { LoginViewModel(context) }
 
@@ -56,7 +56,7 @@ fun NavigationComposable(navController: NavHostController){
             DashboardScreen(navController)
         }
         composable(Map.route) {
-            LocationSharingScreen(navController)
+           MapsScreen(navController)
         }
         composable(Settings.route){
             SettingsScreen(navController)
