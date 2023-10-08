@@ -5,7 +5,7 @@ import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.content.Context
 
-class SafeCircleApp: Application() {
+class    SafeCircleApp: Application() {
     override fun onCreate() {
         super.onCreate()
         val channel = NotificationChannel(

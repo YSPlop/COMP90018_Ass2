@@ -1,9 +1,9 @@
 package com.example.safecircle.ui.screen
 
+import android.util.Log
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.safeContentPadding
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.ViewModel
@@ -12,24 +12,17 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.example.safecircle.ui.components.map.MapMarkerOverlay
 import com.example.safecircle.utils.ErrorDialog
+import com.example.safecircle.utils.PreferenceHelper
 import com.example.safecircle.viewmodel.MapViewModel
-import com.google.android.gms.maps.CameraUpdate
-import com.google.android.gms.maps.CameraUpdateFactory
-import com.google.android.gms.maps.model.CameraPosition
-import com.google.android.gms.maps.model.LatLng
-import com.google.android.gms.maps.model.LatLngBounds
 import com.google.maps.android.compose.GoogleMap
-import com.google.maps.android.compose.Marker
-import com.google.maps.android.compose.MarkerState
-import com.google.maps.android.compose.rememberCameraPositionState
 
 
 @Composable
-fun MapsScreen(navController: NavController) {
-
+fun MapsScreen(navController: NavController, username: String? = null) {
+    Log.d("MapScreen", "Received username = $username")
     val context = LocalContext.current;
-    //    val familyId = PreferenceHelper(context).getFamilyID();
-    val familyId = "testFamily"
+    val familyId = PreferenceHelper(context).getFamilyID();
+//    val familyId = "testFamily"
     if (familyId.isNullOrBlank()) {
         ErrorDialog(message = "FamilyId not set") {}
         return
@@ -53,7 +46,7 @@ fun MapsScreen(navController: NavController) {
             .fillMaxSize(),
         cameraPositionState = cameraPositionState
     ) {
-        MapMarkerOverlay(viewModel = viewModel)
+        MapMarkerOverlay(viewModel = viewModel, username = username)
     }
 }
 
