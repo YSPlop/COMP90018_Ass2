@@ -7,6 +7,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.navArgument
 import com.example.safecircle.database.Role
 import com.example.safecircle.ui.screen.AboutScreen
 import com.example.safecircle.ui.screen.ChildMapScreen
@@ -55,8 +56,10 @@ fun NavigationComposable(navController: NavHostController){
         composable(Dashboard.route){
             DashboardScreen(navController)
         }
-        composable(Map.route) {
-           MapsScreen(navController)
+        composable(
+            Map.routeTemplate,
+            arguments = listOf(navArgument("username") { nullable = true })) {
+           MapsScreen(navController, it.arguments?.getString("username"))
         }
         composable(Settings.route){
             SettingsScreen(navController)

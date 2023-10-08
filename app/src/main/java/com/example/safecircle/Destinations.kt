@@ -4,6 +4,10 @@ interface Destinations {
     val route: String
 }
 
+interface MapDestinations: Destinations {
+    fun ofUser(username: String): String
+}
+
 object Register: Destinations {
     override val route = "Register"
 }
@@ -14,11 +18,17 @@ object Landing: Destinations {
     override val route = "Landing"
 }
 
+object Map: MapDestinations {
+    override fun ofUser(username: String): String {
+        return "Map?username=${username}"
+    }
+
+    override val route = "Map"
+    val routeTemplate = "Map?username={username}"
+
+}
 object Dashboard: Destinations {
     override val route = "Dashboard"
-}
-object Map: Destinations {
-    override val route = "Map"
 }
 
 object Settings: Destinations{

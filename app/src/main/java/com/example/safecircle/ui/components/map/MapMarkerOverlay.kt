@@ -18,10 +18,18 @@ import com.google.maps.android.compose.MarkerComposable
 import com.google.maps.android.compose.MarkerState
 
 @Composable
-fun MapMarkerOverlay(viewModel: MapViewModel) {
+fun MapMarkerOverlay(viewModel: MapViewModel, username: String?=null) {
+    Log.d("MapMarkerTest","username is: $username");
     val cameraPositionState = viewModel.cameraState
     var dataLoaded by remember {
-        mutableStateOf(true)
+        mutableStateOf(false)
+    }
+    val memberLocations = viewModel.memberLocations.filter {
+        if (username.isNullOrEmpty()) {
+            true
+        } else {
+            it.key == username
+        }
     }
     LaunchedEffect(viewModel.memberLocations) {
         if (!dataLoaded) {
@@ -29,23 +37,37 @@ fun MapMarkerOverlay(viewModel: MapViewModel) {
             dataLoaded = true
         }
         Log.d("MapMarkerOverlay", "LaunchedEffect triggered");
-        val cameraUpdate = computeCameraUpdate(viewModel.memberLocations.values)
+
+        val cameraUpdate = computeCameraUpdate(memberLocations.values)
         if (cameraUpdate != null) {
             cameraPositionState.animate(cameraUpdate, 500)
         }
     }
-    viewModel.memberLocations.entries.map {
-        val name = it.key
-            .split(" ")
-            .joinToString(separator = "") { p -> p[0].uppercase() }
+    Log.d("MapMarkerOverlay", "memberLocations = $memberLocations")
+    memberLocations.entries
+        .map {
+        val name = shortenUsername(it.key)
         MarkerComposable(
             state = MarkerState(it.value),
             title = it.key,
-
             ) {
             TextIcon(text = name)
         }
     }
+}
+
+private fun shortenUsername(username: String): String {
+    if (username.isEmpty() && username.isBlank()) {
+        return "U"
+    }
+    val parts = username.split(" ");
+    if (parts.size > 1) {
+        return parts.joinToString(separator = "") { it[0].toString() }
+    }
+    if (parts[0].length > 1) {
+        return parts[0].substring(0, 2).uppercase()
+    }
+    return parts[0].first().uppercase()
 }
 
 private fun computeCameraUpdate(markers: Iterable<LatLng>): CameraUpdate? {
@@ -54,7 +76,7 @@ private fun computeCameraUpdate(markers: Iterable<LatLng>): CameraUpdate? {
         return null
     }
     if (markersList.size == 1) {
-        return CameraUpdateFactory.newLatLngZoom(markersList[0], 10f)
+        return CameraUpdateFactory.newLatLngZoom(markersList[0], 15f)
     }
     val builder = LatLngBounds.builder()
     markersList.forEach {
