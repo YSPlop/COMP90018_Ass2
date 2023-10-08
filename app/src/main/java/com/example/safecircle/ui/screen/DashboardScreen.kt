@@ -53,11 +53,11 @@ data class PersonInfo(
 @Composable
 fun DashboardScreen(navController: NavHostController) {
     val drawerState = rememberDrawerState(DrawerValue.Closed)
-    val coroutineScope = rememberCoroutineScope()
-    val persons = listOf(
-        PersonInfo("John Doe", "location1", "25°C", "85%"),
-        PersonInfo("Jane Smith", "location2", "28°C", "65%"),
-    )
+//    val coroutineScope = rememberCoroutineScope()
+//    val persons = listOf(
+//        PersonInfo("John Doe", "location1", "25°C", "85%"),
+//        PersonInfo("Jane Smith", "location2", "28°C", "65%"),
+//    )
 
     val context = LocalContext.current
     val preferenceHelper = PreferenceHelper(context)

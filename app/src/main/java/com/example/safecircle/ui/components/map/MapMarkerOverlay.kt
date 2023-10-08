@@ -19,6 +19,7 @@ import com.google.maps.android.compose.MarkerState
 
 @Composable
 fun MapMarkerOverlay(viewModel: MapViewModel, username: String?=null) {
+    Log.d("MapMarkerTest","username is: $username");
     val cameraPositionState = viewModel.cameraState
     var dataLoaded by remember {
         mutableStateOf(false)
