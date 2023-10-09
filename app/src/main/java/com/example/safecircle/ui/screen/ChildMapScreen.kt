@@ -79,16 +79,30 @@ fun ChildMapScreen(navController: NavHostController) {
     val role = preferenceHelper.getRole()
     val emergencyContactNumber = preferenceHelper.getEmergencyContact()
     val childLocation = remember { mutableStateOf<LatLng?>(null) }
-//    val markers = remember { mutableStateOf(listOf(EnhancedMarkerState(MarkerState(position = uniMelbCoord)))) }
     val markers = remember { mutableStateOf(mutableMapOf<Int, EnhancedMarkerState>()) }
+    val lastKnownMarkers = remember { mutableStateOf(mutableMapOf<Int, EnhancedMarkerState>()) }
     val selectedMarkerId = remember { mutableStateOf<Int?>(null) }
     val fusedLocationClient = LocationServices.getFusedLocationProviderClient(context)
     val currentLocation = remember { mutableStateOf<LatLng?>(null) }
     val currentLocationMarker = remember { mutableStateOf<MarkerState?>(null) }
     val cameraPositionState = rememberCameraPositionState()
-    val selectedMarker = remember { mutableStateOf<MarkerState?>(null) }
     val showDialog = remember { mutableStateOf(false) }
     val wasInsideCircle = remember { mutableStateOf(false) }
+
+    // Function to check if the markers has changed
+    fun hasMarkersChanged(): Boolean {
+        return markers.value != lastKnownMarkers.value
+    }
+
+    // Update the last-known marker value
+    fun updateLastKnownMarkers() {
+        lastKnownMarkers.value = markers.value.toMutableMap()
+    }
+
+    // Call this function after you have checked, to update the last-known value
+    fun restoreMarkers() {
+        markers.value = lastKnownMarkers.value.toMutableMap()
+    }
 
     val locationPermissions = rememberMultiplePermissionsState(
         permissions = listOf(
@@ -108,9 +122,17 @@ fun ChildMapScreen(navController: NavHostController) {
                     currentLocationMarker.value = MarkerState(position = currentLocation.value!!)
                     cameraPositionState.position = CameraPosition.fromLatLngZoom(currentLocation.value!!, 10f)
                 }
+
+                // Initialize marker status for the child
                 familyID?.let { famId ->
                     objectID?.let { objId ->
-                        familyDatabase.getMarkersFromChild(famId, objId, markers)
+                        familyDatabase.getMarkersFromChild(famId, objId) {retrievedMarkers ->
+                            if(retrievedMarkers != null){
+                                markers.value = retrievedMarkers
+                                // Update the last marker state to current
+                                updateLastKnownMarkers()
+                            }
+                        }
                     }
                 }
             } catch (e: SecurityException) {
@@ -120,6 +142,7 @@ fun ChildMapScreen(navController: NavHostController) {
             }
         }
     }
+
     Column(
     ) {
         Column(
@@ -142,17 +165,27 @@ fun ChildMapScreen(navController: NavHostController) {
             GoogleMap(
                 modifier = Modifier.fillMaxSize(),
                 cameraPositionState = cameraPositionState,
+
+                // Deselect the marker when the map is clicked
                 onMapClick = { _ ->
-                    // Deselect the marker when the map is clicked
                     selectedMarkerId.value = null
+                    if(hasMarkersChanged()){
+                        restoreMarkers()
+                    }
                 },
-                onMapLongClick = { latLng -> // 2. Update onMapClick
+                // Place down new marker
+                onMapLongClick = { latLng ->
                     Log.d("ChildMapScreen", "Map clicked at: $latLng")
                     // Add the clicked location as a new marker to the list
                     val newMarker = EnhancedMarkerState(MarkerState(position = latLng))
-//                    val markerId = UUID.randomUUID()
-                    val markerId = markers.value.size + 1;
-                    val updatedMarkers = markers.value.toMutableMap()  // Create a new mutable copy
+                    // Find the largest ID in the map and increment it by 1
+                    val markerId = if (markers.value.isEmpty()) {
+                        1
+                    } else {
+                        markers.value.keys.maxOrNull()!! + 1
+                    }
+
+                    val updatedMarkers = markers.value.toMutableMap()
                     updatedMarkers[markerId] = newMarker
                     markers.value = updatedMarkers
 
@@ -161,32 +194,17 @@ fun ChildMapScreen(navController: NavHostController) {
                             familyDatabase.pushMarkersToChild(famId, objId, markers.value)
                         }
                     }
-//                    markers.value = markers.value + newMarker
+                    // Update the last marker state to current
+                    updateLastKnownMarkers()
                 }
             ) {
                 markers.value.forEach { entry ->
                     val markerId = entry.key
                     val enhancedMarkerState = entry.value
-//                    currentLocation.value?.let { _ ->
-//                        val isInside = isLocationInsideCircle(
-//                            currentLocation.value!!,
-//                            enhancedMarkerState.markerState.position,
-//                            enhancedMarkerState.properties.value.radius
-//                        )
-//                        if (isInside && !wasInsideCircle.value) {
-//                            Log.d("ChildMapScreen", "Current location is inside the circle for marker: ${enhancedMarkerState.markerState}")
-////                            showDialog.value = true
-////                            wasInsideCircle.value = true
-//                        }
-////                        else if(!isInside){
-////                            wasInsideCircle.value = false
-////                        }
-//                    }
                     Marker(
                         state = enhancedMarkerState.markerState,
                         onClick = {
                             selectedMarkerId.value = markerId
-//                            selectedMarker.value = enhancedMarkerState.markerState
                             true
                         }
                     ){}
@@ -204,11 +222,10 @@ fun ChildMapScreen(navController: NavHostController) {
                     )
                 }
             }
-            // Access the selected marker using its UUID
+            // Access the selected marker using its ID
             val selectedEnhancedMarker = selectedMarkerId.value?.let { markers.value[it] }
             if (selectedEnhancedMarker != null) {
                 // Find the EnhancedMarkerState corresponding to the selected MarkerState
-//                val selectedEnhancedMarker = markers.value.find { it.markerState == selectedMarker.value }
                 val selectedName = selectedEnhancedMarker?.properties?.value?.name ?: ""
                 val selectedRadius = selectedEnhancedMarker?.properties?.value?.radius ?: 100f
                 Column(
@@ -221,9 +238,15 @@ fun ChildMapScreen(navController: NavHostController) {
                     TextField(
                         value = selectedName,
                         onValueChange = { newName ->
-                            val currentProperties = selectedEnhancedMarker?.properties?.value
-                            if (currentProperties != null) {
-                                selectedEnhancedMarker.properties.value = currentProperties.copy(name = newName)
+                            val updatedMarker = selectedEnhancedMarker?.copy(
+                                properties = mutableStateOf(
+                                    selectedEnhancedMarker.properties.value.copy(name = newName)
+                                )
+                            )
+                            if (updatedMarker != null && selectedMarkerId.value != null) {
+                                markers.value = markers.value.toMutableMap().apply {
+                                    this[selectedMarkerId.value!!] = updatedMarker
+                                }
                             }
                         },
                         label = { Text("Marker Name") },
@@ -235,9 +258,15 @@ fun ChildMapScreen(navController: NavHostController) {
                     Slider(
                         value = selectedRadius,
                         onValueChange = { newValue ->
-                            val currentProperties = selectedEnhancedMarker?.properties?.value
-                            if (currentProperties != null) {
-                                selectedEnhancedMarker.properties.value = currentProperties.copy(radius = newValue)
+                            val updatedMarker = selectedEnhancedMarker?.copy(
+                                properties = mutableStateOf(
+                                    selectedEnhancedMarker.properties.value.copy(radius = newValue)
+                                )
+                            )
+                            if (updatedMarker != null && selectedMarkerId.value != null) {
+                                markers.value = markers.value.toMutableMap().apply {
+                                    this[selectedMarkerId.value!!] = updatedMarker
+                                }
                             }
                         },
                         valueRange = 30f..500f,
@@ -246,14 +275,38 @@ fun ChildMapScreen(navController: NavHostController) {
                     Text(text = "${(selectedEnhancedMarker?.properties?.value?.radius ?: 100f).toInt()} meters",)
 
                     Button(
+                        // Delete marker for this child
                         onClick = {
                             markers.value.remove(selectedMarkerId.value)
-//                            markers.value = markers.value.filter { it != selectedEnhancedMarker }
-                            selectedMarker.value = null
+                            familyID?.let { famId ->
+                                objectID?.let { objId ->
+                                    familyDatabase.pushMarkersToChild(famId, objId, markers.value)
+                                }
+                            }
+                            // Update the last marker state to current
+                            updateLastKnownMarkers()
+                            selectedMarkerId.value = null
                         },
                         modifier = Modifier.padding(top = 8.dp)
                     ) {
                         Text(text = "Remove Marker")
+                    }
+                    Button(
+                        // Save button activated when changes are uncommitted to firebase
+                        enabled = hasMarkersChanged(),
+                        // Save changes for markers
+                        onClick = {
+                            familyID?.let { famId ->
+                                objectID?.let { objId ->
+                                    familyDatabase.pushMarkersToChild(famId, objId, markers.value)
+                                }
+                            }
+                            // Update the last marker state to current
+                            updateLastKnownMarkers()
+                        },
+                        modifier = Modifier.padding(top = 8.dp)
+                    ) {
+                        Text(text = "Save")
                     }
                 }
             }

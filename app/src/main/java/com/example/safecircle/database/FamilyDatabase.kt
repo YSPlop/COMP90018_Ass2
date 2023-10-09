@@ -380,8 +380,15 @@ class FamilyDatabase {
             }
     }
 
-    fun getMarkersFromChild(familyId: String?, objectId: String?, markers: MutableState<MutableMap<Int, EnhancedMarkerState>>) {
-        if (familyId == null || objectId == null) return
+    fun getMarkersFromChild(
+        familyId: String?,
+        objectId: String?,
+        callback: (MutableMap<Int, EnhancedMarkerState>?) -> Unit
+    ){
+        if (familyId == null || objectId == null) {
+            callback(null)
+            return
+        }
 
         val childRef = familiesReference.child(familyId).child("child").child(objectId)
 
@@ -395,10 +402,11 @@ class FamilyDatabase {
                     markersMap[firebaseMarker.id] = EnhancedMarkerState(markerState, mutableStateOf(properties))
                 }
             }
-            markers.value = markersMap
+            callback(markersMap)
         }
             .addOnFailureListener { exception ->
                 Log.e("FamilyDatabase", "Error: $exception")
+                callback(null)
             }
     }
 
