@@ -4,6 +4,7 @@ import android.Manifest
 import android.adservices.adid.AdId
 import android.annotation.SuppressLint
 import android.util.Log
+import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -79,8 +80,8 @@ fun ChildMapScreen(navController: NavHostController) {
     val emergencyContactNumber = preferenceHelper.getEmergencyContact()
     val childLocation = remember { mutableStateOf<LatLng?>(null) }
 //    val markers = remember { mutableStateOf(listOf(EnhancedMarkerState(MarkerState(position = uniMelbCoord)))) }
-    val markers = remember { mutableStateOf(mutableMapOf<UUID, EnhancedMarkerState>()) }
-    val selectedMarkerId = remember { mutableStateOf<UUID?>(null) }
+    val markers = remember { mutableStateOf(mutableMapOf<Int, EnhancedMarkerState>()) }
+    val selectedMarkerId = remember { mutableStateOf<Int?>(null) }
     val fusedLocationClient = LocationServices.getFusedLocationProviderClient(context)
     val currentLocation = remember { mutableStateOf<LatLng?>(null) }
     val currentLocationMarker = remember { mutableStateOf<MarkerState?>(null) }
@@ -106,6 +107,11 @@ fun ChildMapScreen(navController: NavHostController) {
                     currentLocation.value = LatLng(location.latitude, location.longitude)
                     currentLocationMarker.value = MarkerState(position = currentLocation.value!!)
                     cameraPositionState.position = CameraPosition.fromLatLngZoom(currentLocation.value!!, 10f)
+                }
+                familyID?.let { famId ->
+                    objectID?.let { objId ->
+                        familyDatabase.getMarkersFromChild(famId, objId, markers)
+                    }
                 }
             } catch (e: SecurityException) {
                 Log.e("ChildMapScreen", "Permission denied: $e")
@@ -144,10 +150,17 @@ fun ChildMapScreen(navController: NavHostController) {
                     Log.d("ChildMapScreen", "Map clicked at: $latLng")
                     // Add the clicked location as a new marker to the list
                     val newMarker = EnhancedMarkerState(MarkerState(position = latLng))
-                    val markerId = UUID.randomUUID()
+//                    val markerId = UUID.randomUUID()
+                    val markerId = markers.value.size + 1;
                     val updatedMarkers = markers.value.toMutableMap()  // Create a new mutable copy
                     updatedMarkers[markerId] = newMarker
                     markers.value = updatedMarkers
+
+                    familyID?.let { famId ->
+                        objectID?.let { objId ->
+                            familyDatabase.pushMarkersToChild(famId, objId, markers.value)
+                        }
+                    }
 //                    markers.value = markers.value + newMarker
                 }
             ) {
