@@ -28,8 +28,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.ui.graphics.Color
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Surface
-import androidx.compose.foundation.clickable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -37,6 +35,7 @@ import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.sp
@@ -157,30 +156,28 @@ fun DashboardScreen(navController: NavHostController) {
 @Composable
 fun PersonCard(person: PersonInfo, navController: NavHostController) {
     ElevatedCard(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = 5.dp, horizontal = 10.dp)
-            .background(
-                color = MaterialTheme.colorScheme.surface,
-                shape = RoundedCornerShape(8.dp)
-            )
-            .border(1.dp, Color.Gray, RoundedCornerShape(8.dp))
-//            .clickable(onClick = {
-//                navController.navigate(Map.ofUser(person.name))
-//            }) // Added clickable modifier here
+//        modifier = Modifier
+//            .padding(vertical = 5.dp, horizontal = 10.dp)
     ) {
-
-        Column(
+        ElevatedCard (
             modifier = Modifier
-                .fillMaxWidth()
-                .padding(vertical = 10.dp, horizontal = 15.dp)
-//                verticalArrangement = Arrangement.spacedBy(8.dp),
-//                ,
-//                horizontalAlignment = Alignment.Start
-
+                .padding(horizontal = 15.dp, vertical = 10.dp)
+                .fillMaxWidth(),
+            colors = CardDefaults.cardColors(),
         ) {
-            InformationInPersonCard(person)
+
+            Column(
+                modifier = Modifier
+                    .padding(vertical = 10.dp, horizontal = 15.dp)
+                    .fillMaxWidth(),
+                verticalArrangement = Arrangement.Center,
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                InformationInPersonCard(person)
+            }
+
         }
+
 
         ElevatedButton(
             onClick =
@@ -193,7 +190,8 @@ fun PersonCard(person: PersonInfo, navController: NavHostController) {
             ),
             modifier = Modifier
                 .padding(horizontal = 15.dp, vertical = 10.dp)
-                .fillMaxWidth()
+                .fillMaxWidth(),
+
         ) {
             Text(
                 text = "Show Map",
@@ -201,9 +199,6 @@ fun PersonCard(person: PersonInfo, navController: NavHostController) {
                 fontSize = 13.sp
             )
         }
-
-
-
     }
 }
 
@@ -211,80 +206,73 @@ fun PersonCard(person: PersonInfo, navController: NavHostController) {
 fun InformationInPersonCard(person:PersonInfo){
 
     Text(
-        buildAnnotatedString(
-        ) {
-            withStyle(
-                style = SpanStyle(
-                    fontWeight = FontWeight.Bold,
-                )
-            ) {
-                append("Name: ")
-            }
-            withStyle(
-                SpanStyle(
-                )
-            ) {
-                append(person.name)
-            }
-        }
+        text = person.name,
+        fontWeight = FontWeight.Bold,
+
     )
 
-    Text(
-        buildAnnotatedString(
-        ) {
-            withStyle(
-                style = SpanStyle(
-                    fontWeight = FontWeight.Bold,
-                )
+        Text(
+            buildAnnotatedString(
             ) {
-                append("Location: ")
-            }
-            withStyle(
-                SpanStyle(
-                )
-            ) {
-                append(person.location)
-            }
-        }
-    )
+                withStyle(
+                    style = SpanStyle(
+                        fontWeight = FontWeight.Bold,
+                    )
+                ) {
+                    append("Location: ")
+                }
+                withStyle(
+                    SpanStyle(
+                    )
+                ) {
+                    append(person.location)
+                }
+            },
 
-    Text(
-        buildAnnotatedString(
-        ) {
-            withStyle(
-                style = SpanStyle(
-                    fontWeight = FontWeight.Bold,
-                )
-            ) {
-                append("Temperature: ")
-            }
-            withStyle(
-                SpanStyle(
-                )
-            ) {
-                append(person.temperature)
-            }
-        }
-    )
+        )
 
-    Text(
-        buildAnnotatedString(
-        ) {
-            withStyle(
-                style = SpanStyle(
-                    fontWeight = FontWeight.Bold,
-                )
+        Text(
+            buildAnnotatedString(
             ) {
-                append("Phone Battery: ")
+                withStyle(
+                    style = SpanStyle(
+                        fontWeight = FontWeight.Bold,
+                    )
+                ) {
+                    append("Temperature: ")
+                }
+                withStyle(
+                    SpanStyle(
+                    )
+                ) {
+                    append(person.temperature)
+                }
             }
-            withStyle(
-                SpanStyle(
-                )
+        )
+
+        Text(
+            buildAnnotatedString(
             ) {
-                append(person.phoneBattery)
+                withStyle(
+                    style = SpanStyle(
+                        fontWeight = FontWeight.Bold,
+                    )
+                ) {
+                    append("Phone Battery: ")
+                }
+                withStyle(
+                    SpanStyle(
+                    )
+                ) {
+                    append(person.phoneBattery)
+                }
             }
-        }
-    )
+        )
+
+
+
+
+
 //    Text(
 //        text = "Location: ${person.location}",
 //        style = MaterialTheme.typography.labelMedium,
