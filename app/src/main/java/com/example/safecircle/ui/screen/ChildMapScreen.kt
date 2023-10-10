@@ -1,7 +1,6 @@
 package com.example.safecircle.ui.screen
 
 import android.Manifest
-import android.adservices.adid.AdId
 import android.annotation.SuppressLint
 import android.util.Log
 import android.widget.Toast
@@ -34,7 +33,6 @@ import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import androidx.navigation.NavHostController
 import com.example.safecircle.ChildSettings
-import com.example.safecircle.database.FamilyDatabase
 import com.example.safecircle.sensors.ForegroundSensorService
 import com.example.safecircle.utils.PreferenceHelper
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
