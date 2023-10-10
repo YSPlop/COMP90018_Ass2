@@ -49,14 +49,15 @@ data class PersonInfo(
     val temperature: String,
     val phoneBattery: String
 )
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DashboardScreen(navController: NavHostController) {
     val drawerState = rememberDrawerState(DrawerValue.Closed)
-    val coroutineScope = rememberCoroutineScope()
-    val persons = listOf(
-        PersonInfo("John Doe", "location1", "25°C", "85%"),
-        PersonInfo("Jane Smith", "location2", "28°C", "65%"),
-    )
+//    val coroutineScope = rememberCoroutineScope()
+//    val persons = listOf(
+//        PersonInfo("John Doe", "location1", "25°C", "85%"),
+//        PersonInfo("Jane Smith", "location2", "28°C", "65%"),
+//    )
 
     val context = LocalContext.current
     val preferenceHelper = PreferenceHelper(context)
@@ -148,7 +149,9 @@ fun PersonCard(person: PersonInfo, navController: NavHostController, onClick: ()
                 shape = RoundedCornerShape(8.dp)
             )
             .border(1.dp, Color.Gray, RoundedCornerShape(8.dp))
-            .clickable(onClick = {navController.navigate(Map.route)}) // Added clickable modifier here
+            .clickable(onClick = {
+                navController.navigate(Map.ofUser(person.name))
+            }) // Added clickable modifier here
     ) {
         Column(
             modifier = Modifier

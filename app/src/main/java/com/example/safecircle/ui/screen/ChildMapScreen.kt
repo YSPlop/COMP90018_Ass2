@@ -31,8 +31,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import androidx.core.content.ContextCompat
 import androidx.navigation.NavHostController
 import com.example.safecircle.ChildSettings
+import com.example.safecircle.database.FamilyDatabase
+import com.example.safecircle.sensors.ForegroundSensorService
 import com.example.safecircle.utils.PreferenceHelper
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.rememberMultiplePermissionsState
@@ -113,6 +116,7 @@ fun ChildMapScreen(navController: NavHostController) {
     LaunchedEffect(Unit) {
         locationPermissions.launchMultiplePermissionRequest()
     }
+
 
     if (locationPermissions.allPermissionsGranted) {
         LaunchedEffect(Unit) {
