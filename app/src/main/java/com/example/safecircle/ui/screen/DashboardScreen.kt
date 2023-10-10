@@ -210,7 +210,7 @@ fun InformationInPersonCard(person:PersonInfo){
         fontWeight = FontWeight.Bold,
 
     )
-
+    // If you would like to left align the below to the center then put the below in a column
         Text(
             buildAnnotatedString(
             ) {
