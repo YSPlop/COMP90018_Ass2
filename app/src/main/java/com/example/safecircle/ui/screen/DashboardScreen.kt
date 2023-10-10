@@ -208,9 +208,14 @@ fun InformationInPersonCard(person:PersonInfo){
     Text(
         text = person.name,
         fontWeight = FontWeight.Bold,
+        fontSize = 19.sp,
 
     )
     // If you would like to left align the below to the center then put the below in a column
+    Column(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalAlignment = Alignment.Start
+    ){
         Text(
             buildAnnotatedString(
             ) {
@@ -229,7 +234,7 @@ fun InformationInPersonCard(person:PersonInfo){
                 }
             },
 
-        )
+            )
 
         Text(
             buildAnnotatedString(
@@ -268,6 +273,8 @@ fun InformationInPersonCard(person:PersonInfo){
                 }
             }
         )
+    }
+
 
 
 
