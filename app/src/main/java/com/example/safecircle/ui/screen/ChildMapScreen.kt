@@ -47,7 +47,12 @@ import androidx.compose.material3.Slider
 import androidx.compose.runtime.MutableState
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.safecircle.database.FamilyDatabase
+import com.example.safecircle.ui.components.map.MapMarkerOverlay
+import com.example.safecircle.viewmodel.MapViewModel
 import com.google.android.gms.location.LocationServices
 import com.google.maps.android.compose.Circle
 import java.util.UUID
@@ -56,26 +61,26 @@ import kotlin.math.cos
 import kotlin.math.sin
 import kotlin.math.sqrt
 
-data class MarkerProperties(
-    var radius: Float = 100f,
-    var name: String = "Marker"
-)
-
-data class EnhancedMarkerState(
-    val markerState: MarkerState,
-    var properties: MutableState<MarkerProperties> = mutableStateOf(MarkerProperties())
-)
+//data class MarkerProperties(
+//    var radius: Float = 100f,
+//    var name: String = "Marker"
+//)
+//
+//data class EnhancedMarkerState(
+//    val markerState: MarkerState,
+//    var properties: MutableState<MarkerProperties> = mutableStateOf(MarkerProperties())
+//)
 
 @SuppressLint("MutableCollectionMutableState")
 @OptIn(ExperimentalPermissionsApi::class, ExperimentalMaterial3Api::class)
 @Composable
-fun ChildMapScreen(navController: NavHostController) {
+fun ChildMapScreen(navController: NavHostController, username: String? = null, familyId: String) {
     val familyDatabase = FamilyDatabase()
     val uniMelbCoord = LatLng(-37.798919,144.964232)
     val context = LocalContext.current
     val preferenceHelper = PreferenceHelper(context)
     val familyID = preferenceHelper.getFamilyID()
-    val username = preferenceHelper.getUsername()
+    val pusername = preferenceHelper.getUsername()
     val objectID = preferenceHelper.getObjectId()
     val role = preferenceHelper.getRole()
     val emergencyContactNumber = preferenceHelper.getEmergencyContact()
@@ -83,10 +88,10 @@ fun ChildMapScreen(navController: NavHostController) {
     val markers = remember { mutableStateOf(mutableMapOf<Int, EnhancedMarkerState>()) }
     val lastKnownMarkers = remember { mutableStateOf(mutableMapOf<Int, EnhancedMarkerState>()) }
     val selectedMarkerId = remember { mutableStateOf<Int?>(null) }
-    val fusedLocationClient = LocationServices.getFusedLocationProviderClient(context)
-    val currentLocation = remember { mutableStateOf<LatLng?>(null) }
-    val currentLocationMarker = remember { mutableStateOf<MarkerState?>(null) }
-    val cameraPositionState = rememberCameraPositionState()
+//    val fusedLocationClient = LocationServices.getFusedLocationProviderClient(context)
+//    val currentLocation = remember { mutableStateOf<LatLng?>(null) }
+//    val currentLocationMarker = remember { mutableStateOf<MarkerState?>(null) }
+//    val cameraPositionState = rememberCameraPositionState()
     val showDialog = remember { mutableStateOf(false) }
     val wasInsideCircle = remember { mutableStateOf(false) }
 
@@ -105,43 +110,41 @@ fun ChildMapScreen(navController: NavHostController) {
         markers.value = lastKnownMarkers.value.toMutableMap()
     }
 
-    val locationPermissions = rememberMultiplePermissionsState(
-        permissions = listOf(
-            Manifest.permission.ACCESS_FINE_LOCATION,
-            Manifest.permission.ACCESS_COARSE_LOCATION
-        )
+    val viewModel = viewModel<MapViewModel>(
+        factory = object : ViewModelProvider.Factory {
+            @Suppress("UNCHECKED_CAST")
+            override fun <T : ViewModel> create(modelClass: Class<T>): T {
+                return MapViewModel(familyID!!) as T
+            }
+        }
     )
+    val cameraPositionState = viewModel.cameraState
+
+
     LaunchedEffect(Unit) {
-        locationPermissions.launchMultiplePermissionRequest()
-    }
+        try {
+//            fusedLocationClient.lastLocation.addOnSuccessListener { location ->
+//                currentLocation.value = LatLng(location.latitude, location.longitude)
+//                currentLocationMarker.value = MarkerState(position = currentLocation.value!!)
+//                cameraPositionState.position = CameraPosition.fromLatLngZoom(currentLocation.value!!, 10f)
+//            }
 
-
-    if (locationPermissions.allPermissionsGranted) {
-        LaunchedEffect(Unit) {
-            try {
-                fusedLocationClient.lastLocation.addOnSuccessListener { location ->
-                    currentLocation.value = LatLng(location.latitude, location.longitude)
-                    currentLocationMarker.value = MarkerState(position = currentLocation.value!!)
-                    cameraPositionState.position = CameraPosition.fromLatLngZoom(currentLocation.value!!, 10f)
-                }
-
-                // Initialize marker status for the child
-                familyID?.let { famId ->
-                    objectID?.let { objId ->
-                        familyDatabase.getMarkersFromChild(famId, objId) {retrievedMarkers ->
-                            if(retrievedMarkers != null){
-                                markers.value = retrievedMarkers
-                                // Update the last marker state to current
-                                updateLastKnownMarkers()
-                            }
+            // Initialize marker status for the child
+            familyID?.let { famId ->
+                objectID?.let { objId ->
+                    familyDatabase.getMarkersFromChild(famId, objId) {retrievedMarkers ->
+                        if(retrievedMarkers != null){
+                            markers.value = retrievedMarkers
+                            // Update the last marker state to current
+                            updateLastKnownMarkers()
                         }
                     }
                 }
-            } catch (e: SecurityException) {
-                Log.e("ChildMapScreen", "Permission denied: $e")
-            }catch (e: Exception) {
-                Log.e("ChildMapScreen", "Error fetching location: $e")
             }
+        } catch (e: SecurityException) {
+            Log.e("ChildMapScreen", "Permission denied: $e")
+        }catch (e: Exception) {
+            Log.e("ChildMapScreen", "Error fetching location: $e")
         }
     }
 
@@ -158,7 +161,6 @@ fun ChildMapScreen(navController: NavHostController) {
                         Icon(imageVector = Icons.Default.Face, contentDescription = "Child Navigation", Modifier.size(36.dp))
                     }
                 },
-
             )
         }
         Box(
@@ -200,14 +202,17 @@ fun ChildMapScreen(navController: NavHostController) {
                     updateLastKnownMarkers()
                 }
             ) {
+                MapMarkerOverlay(viewModel = viewModel, familyId = familyID!!)
                 markers.value.forEach { entry ->
                     val markerId = entry.key
                     val enhancedMarkerState = entry.value
                     Marker(
                         state = enhancedMarkerState.markerState,
+                        title = enhancedMarkerState.properties.value.name,
                         onClick = {
                             selectedMarkerId.value = markerId
-                            true
+//                            true
+                            false
                         }
                     ){}
                     Circle(
@@ -216,13 +221,13 @@ fun ChildMapScreen(navController: NavHostController) {
                         fillColor = Color.Blue.copy(alpha = 0.3f)
                     )
                 }
-                currentLocationMarker.value?.let { markerState ->
-                    Marker(
-                        state = markerState,
-                        title = "My Location",
-                        snippet = "Current device location"
-                    )
-                }
+//                currentLocationMarker.value?.let { markerState ->
+//                    Marker(
+//                        state = markerState,
+//                        title = "My Location",
+//                        snippet = "Current device location"
+//                    )
+//                }
             }
             // Access the selected marker using its ID
             val selectedEnhancedMarker = selectedMarkerId.value?.let { markers.value[it] }
@@ -257,59 +262,59 @@ fun ChildMapScreen(navController: NavHostController) {
                             .fillMaxWidth()
                     )
 
-//                    Slider(
-//                        value = selectedRadius,
-//                        onValueChange = { newValue ->
-//                            val updatedMarker = selectedEnhancedMarker?.copy(
-//                                properties = mutableStateOf(
-//                                    selectedEnhancedMarker.properties.value.copy(radius = newValue)
-//                                )
-//                            )
-//                            if (updatedMarker != null && selectedMarkerId.value != null) {
-//                                markers.value = markers.value.toMutableMap().apply {
-//                                    this[selectedMarkerId.value!!] = updatedMarker
-//                                }
-//                            }
-//                        },
-//                        valueRange = 30f..500f,
-//                        modifier = Modifier.padding(all = 16.dp)
-//                    )
+                    Slider(
+                        value = selectedRadius,
+                        onValueChange = { newValue ->
+                            val updatedMarker = selectedEnhancedMarker?.copy(
+                                properties = mutableStateOf(
+                                    selectedEnhancedMarker.properties.value.copy(radius = newValue)
+                                )
+                            )
+                            if (updatedMarker != null && selectedMarkerId.value != null) {
+                                markers.value = markers.value.toMutableMap().apply {
+                                    this[selectedMarkerId.value!!] = updatedMarker
+                                }
+                            }
+                        },
+                        valueRange = 30f..500f,
+                        modifier = Modifier.padding(all = 16.dp)
+                    )
                     Text(text = "${(selectedEnhancedMarker?.properties?.value?.radius ?: 100f).toInt()} meters",)
 
-//                    Button(
-//                        // Delete marker for this child
-//                        onClick = {
-//                            markers.value.remove(selectedMarkerId.value)
-//                            familyID?.let { famId ->
-//                                objectID?.let { objId ->
-//                                    familyDatabase.pushMarkersToChild(famId, objId, markers.value)
-//                                }
-//                            }
-//                            // Update the last marker state to current
-//                            updateLastKnownMarkers()
-//                            selectedMarkerId.value = null
-//                        },
-//                        modifier = Modifier.padding(top = 8.dp)
-//                    ) {
-//                        Text(text = "Remove Marker")
-//                    }
-//                    Button(
-//                        // Save button activated when changes are uncommitted to firebase
-//                        enabled = hasMarkersChanged(),
-//                        // Save changes for markers
-//                        onClick = {
-//                            familyID?.let { famId ->
-//                                objectID?.let { objId ->
-//                                    familyDatabase.pushMarkersToChild(famId, objId, markers.value)
-//                                }
-//                            }
-//                            // Update the last marker state to current
-//                            updateLastKnownMarkers()
-//                        },
-//                        modifier = Modifier.padding(top = 8.dp)
-//                    ) {
-//                        Text(text = "Save")
-//                    }
+                    Button(
+                        // Delete marker for this child
+                        onClick = {
+                            markers.value.remove(selectedMarkerId.value)
+                            familyID?.let { famId ->
+                                objectID?.let { objId ->
+                                    familyDatabase.pushMarkersToChild(famId, objId, markers.value)
+                                }
+                            }
+                            // Update the last marker state to current
+                            updateLastKnownMarkers()
+                            selectedMarkerId.value = null
+                        },
+                        modifier = Modifier.padding(top = 8.dp)
+                    ) {
+                        Text(text = "Remove Marker")
+                    }
+                    Button(
+                        // Save button activated when changes are uncommitted to firebase
+                        enabled = hasMarkersChanged(),
+                        // Save changes for markers
+                        onClick = {
+                            familyID?.let { famId ->
+                                objectID?.let { objId ->
+                                    familyDatabase.pushMarkersToChild(famId, objId, markers.value)
+                                }
+                            }
+                            // Update the last marker state to current
+                            updateLastKnownMarkers()
+                        },
+                        modifier = Modifier.padding(top = 8.dp)
+                    ) {
+                        Text(text = "Save")
+                    }
                 }
             }
         }

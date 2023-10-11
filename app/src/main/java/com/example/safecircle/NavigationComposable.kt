@@ -60,7 +60,7 @@ fun NavigationComposable(navController: NavHostController){
             Map.routeTemplate,
             arguments = listOf(navArgument("username") { nullable = true })) {
             if (familyId != null) {
-                MapsScreen(navController, it.arguments?.getString("username"), familyId)
+                ChildMapScreen(navController, it.arguments?.getString("username"), familyId)
             }
         }
         composable(Settings.route){
@@ -73,7 +73,7 @@ fun NavigationComposable(navController: NavHostController){
             HelpScreen(navController)
         }
         composable(ChildMap.route){
-            ChildMapScreen(navController)
+            ChildMapScreen(navController, username!!, familyId!!)
         }
         composable(ChildSettings.route){
             ChildSettingsScreen(navController)

@@ -46,6 +46,7 @@ fun MapMarkerOverlay(viewModel: MapViewModel,
         Log.d("MapMarkerOverlay", "LaunchedEffect triggered");
 
         val cameraUpdate = computeCameraUpdate(memberLocations.values)
+        Log.d("MapMarkerOverlay", "$cameraUpdate")
         if (cameraUpdate != null) {
             cameraPositionState.animate(cameraUpdate, 500)
         }

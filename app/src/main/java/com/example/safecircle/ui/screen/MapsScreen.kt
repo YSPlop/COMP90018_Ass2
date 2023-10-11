@@ -16,6 +16,7 @@ import androidx.compose.material3.Slider
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -39,6 +40,16 @@ import com.google.maps.android.compose.GoogleMap
 import com.google.maps.android.compose.Marker
 import com.google.maps.android.compose.MarkerState
 
+
+data class MarkerProperties(
+    var radius: Float = 100f,
+    var name: String = "Marker"
+)
+
+data class EnhancedMarkerState(
+    val markerState: MarkerState,
+    var properties: MutableState<MarkerProperties> = mutableStateOf(MarkerProperties())
+)
 
 @Composable
 fun MapsScreen(navController: NavController, username: String? = null, familyId: String) {
@@ -138,6 +149,7 @@ fun MapsScreen(navController: NavController, username: String? = null, familyId:
                 updateLastKnownMarkers()
             }
         ) {
+            MapMarkerOverlay(viewModel = viewModel, familyId = familyId)
             markers.value.forEach { entry ->
                 val markerId = entry.key
                 val enhancedMarkerState = entry.value
