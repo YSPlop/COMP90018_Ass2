@@ -51,6 +51,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.safecircle.database.FamilyDatabase
+import com.example.safecircle.database.FamilyLocationDao
 import com.example.safecircle.ui.components.map.MapMarkerOverlay
 import com.example.safecircle.viewmodel.MapViewModel
 import com.google.android.gms.location.LocationServices
@@ -75,12 +76,12 @@ import kotlin.math.sqrt
 @OptIn(ExperimentalPermissionsApi::class, ExperimentalMaterial3Api::class)
 @Composable
 fun ChildMapScreen(navController: NavHostController, username: String? = null, familyId: String) {
-    val familyDatabase = FamilyDatabase()
+//    val familyDatabase = FamilyDatabase()
     val uniMelbCoord = LatLng(-37.798919,144.964232)
     val context = LocalContext.current
     val preferenceHelper = PreferenceHelper(context)
     val familyID = preferenceHelper.getFamilyID()
-    val pusername = preferenceHelper.getUsername()
+//    val username = preferenceHelper.getUsername()
     val objectID = preferenceHelper.getObjectId()
     val role = preferenceHelper.getRole()
     val emergencyContactNumber = preferenceHelper.getEmergencyContact()
@@ -94,6 +95,7 @@ fun ChildMapScreen(navController: NavHostController, username: String? = null, f
 //    val cameraPositionState = rememberCameraPositionState()
     val showDialog = remember { mutableStateOf(false) }
     val wasInsideCircle = remember { mutableStateOf(false) }
+    var _familyLocationDao = FamilyLocationDao.getInstance(familyId)
 
     // Function to check if the markers has changed
     fun hasMarkersChanged(): Boolean {
@@ -131,8 +133,8 @@ fun ChildMapScreen(navController: NavHostController, username: String? = null, f
 
             // Initialize marker status for the child
             familyID?.let { famId ->
-                objectID?.let { objId ->
-                    familyDatabase.getMarkersFromChild(famId, objId) {retrievedMarkers ->
+                username?.let { objId ->
+                    _familyLocationDao.getMarkersFromChild(famId, objId) {retrievedMarkers ->
                         if(retrievedMarkers != null){
                             markers.value = retrievedMarkers
                             // Update the last marker state to current
@@ -194,8 +196,8 @@ fun ChildMapScreen(navController: NavHostController, username: String? = null, f
                     markers.value = updatedMarkers
 
                     familyID?.let { famId ->
-                        objectID?.let { objId ->
-                            familyDatabase.pushMarkersToChild(famId, objId, markers.value)
+                        username?.let { objId ->
+                            _familyLocationDao.pushMarkersToChild(famId, objId, markers.value)
                         }
                     }
                     // Update the last marker state to current
@@ -286,8 +288,8 @@ fun ChildMapScreen(navController: NavHostController, username: String? = null, f
                         onClick = {
                             markers.value.remove(selectedMarkerId.value)
                             familyID?.let { famId ->
-                                objectID?.let { objId ->
-                                    familyDatabase.pushMarkersToChild(famId, objId, markers.value)
+                                username?.let { objId ->
+                                    _familyLocationDao.pushMarkersToChild(famId, objId, markers.value)
                                 }
                             }
                             // Update the last marker state to current
@@ -304,8 +306,8 @@ fun ChildMapScreen(navController: NavHostController, username: String? = null, f
                         // Save changes for markers
                         onClick = {
                             familyID?.let { famId ->
-                                objectID?.let { objId ->
-                                    familyDatabase.pushMarkersToChild(famId, objId, markers.value)
+                                username?.let { objId ->
+                                    _familyLocationDao.pushMarkersToChild(famId, objId, markers.value)
                                 }
                             }
                             // Update the last marker state to current
