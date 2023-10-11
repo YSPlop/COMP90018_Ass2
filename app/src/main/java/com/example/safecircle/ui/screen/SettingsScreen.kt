@@ -292,22 +292,31 @@ fun SettingsScreen(navController: NavHostController) {
 
                                         }
                                         else {
-                                            val newChild = Child(childName.value.text, childCode.value.text)
-                                            familyDatabase.addChildToFamily(famId, newChild)
-                                            Toast.makeText(
-                                                context,
-                                                "Account ${childName.value.text} has been created",
-                                                Toast.LENGTH_SHORT
-                                            ).show()
-                                            childCode.value = TextFieldValue("")
-                                            childName.value = TextFieldValue("")
+                                            familyDatabase.childCodeExists(famId,childCode.value.text) { exists ->
+                                                if (exists) {
+                                                    Toast.makeText(
+                                                        context,
+                                                        "Child code ${childCode.value.text} already exist in the database",
+                                                        Toast.LENGTH_SHORT
+                                                    ).show()
+
+                                                }
+                                                else{
+                                                    val newChild = Child(childName.value.text, childCode.value.text)
+                                                    familyDatabase.addChildToFamily(famId, newChild)
+                                                    Toast.makeText(
+                                                        context,
+                                                        "Account ${childName.value.text} has been created",
+                                                        Toast.LENGTH_SHORT
+                                                    ).show()
+                                                    childCode.value = TextFieldValue("")
+                                                    childName.value = TextFieldValue("")
+                                                }
+                                            }
+
                                         }
                                     }
                                 }
-
-
-
-
                             },
                             colors = ButtonDefaults.buttonColors(
                                 containerColor = YellowPrimary,

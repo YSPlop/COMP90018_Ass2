@@ -77,7 +77,27 @@ class FamilyDatabase {
             }
         })
     }
+    fun childCodeExists(familyId: String, childCode: String, onComplete: (Boolean) -> Unit) {
+        val familyReference = familiesReference.child(familyId)
+        val childUserReference = familyReference.child("child")
 
+        childUserReference.addListenerForSingleValueEvent(object : ValueEventListener {
+            override fun onDataChange(childDataSnapshot: DataSnapshot) {
+                for (childSnapshot in childDataSnapshot.children) {
+                    val codeValue = childSnapshot.child("code").getValue(String::class.java)
+                    if (codeValue == childCode) {
+                        onComplete(true)
+                        return
+                    }
+                }
+                onComplete(false)
+            }
+
+            override fun onCancelled(databaseError: DatabaseError) {
+                onComplete(false)
+            }
+        })
+    }
     fun usernamePasswordMatch(
         username: String,
         password: String,
