@@ -45,6 +45,7 @@ import com.google.maps.android.compose.MarkerState
 import com.google.maps.android.compose.rememberCameraPositionState
 import androidx.compose.material3.Slider
 import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.SideEffect
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.ViewModel
@@ -55,7 +56,11 @@ import com.example.safecircle.database.FamilyLocationDao
 import com.example.safecircle.ui.components.map.MapMarkerOverlay
 import com.example.safecircle.viewmodel.MapViewModel
 import com.google.android.gms.location.LocationServices
+import com.google.android.gms.maps.CameraUpdate
+import com.google.android.gms.maps.CameraUpdateFactory
+import com.google.android.gms.maps.model.LatLngBounds
 import com.google.maps.android.compose.Circle
+import kotlinx.coroutines.async
 import java.util.UUID
 import kotlin.math.atan2
 import kotlin.math.cos
@@ -121,7 +126,19 @@ fun ChildMapScreen(navController: NavHostController, username: String? = null, f
         }
     )
     val cameraPositionState = viewModel.cameraState
-
+    SideEffect {
+        Log.d("MapMarkerOverlay", "Side Effect triggered");
+        viewModel.fetchMemberLocationsAsync();
+    }
+    LaunchedEffect(viewModel.memberLocations) {
+        Log.d("MapMarkerOverlay", "LaunchedEffect triggered");
+        val cameraUpdate = computeCameraUpdate(viewModel.memberLocations.values)
+        Log.d("MapMarkerOverlay", "$cameraUpdate")
+        if (cameraUpdate != null) {
+            Log.d("MapMarkerOverlay", "cameraUpdate")
+            async {  cameraPositionState.animate(cameraUpdate, 500) }.await()
+        }
+    }
 
     LaunchedEffect(Unit) {
         try {
@@ -356,4 +373,20 @@ fun isLocationInsideCircle(location: LatLng, circleCenter: LatLng, radius: Float
     val distance = earthRadius * c // Distance in meters
 
     return distance <= radius
+}
+
+private fun computeCameraUpdate(markers: Iterable<LatLng>): CameraUpdate? {
+    val markersList = markers.toList()
+    if (markersList.isEmpty()) {
+        return null
+    }
+    if (markersList.size == 1) {
+        return CameraUpdateFactory.newLatLngZoom(markersList[0], 15f)
+    }
+    val builder = LatLngBounds.builder()
+    markersList.forEach {
+        builder.include(it)
+    }
+    val bounds = builder.build()
+    return CameraUpdateFactory.newLatLngBounds(bounds, 500, 1000, 4)
 }

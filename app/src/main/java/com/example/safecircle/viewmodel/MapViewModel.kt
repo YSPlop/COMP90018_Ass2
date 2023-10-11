@@ -8,6 +8,7 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import com.example.safecircle.database.FamilyLocationDao
 import com.example.safecircle.ui.screen.EnhancedMarkerState
+import com.google.android.gms.maps.CameraUpdate
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
 import com.google.maps.android.compose.CameraPositionState
@@ -34,4 +35,5 @@ class MapViewModel(
     fun fetchMemberLocationsAsync() {
         _familyLocationDao.getMembersLocationsAsync { memberLocations = it }
     }
+
 }
