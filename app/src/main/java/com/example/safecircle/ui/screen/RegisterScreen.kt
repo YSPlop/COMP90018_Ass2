@@ -58,6 +58,7 @@ fun RegisterScreen(navController: NavHostController, viewModel: RegisterViewMode
     var username by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var showDialog by remember { mutableStateOf(false) }
+    var showUsernameDialog by remember { mutableStateOf(false) }
 
     Box(modifier = Modifier.fillMaxSize()) {
         // Drawing the background
@@ -145,9 +146,17 @@ fun RegisterScreen(navController: NavHostController, viewModel: RegisterViewMode
                         familyDatabase.familyExists(familyID) { exists ->
                             if (exists) {
                                 showDialog = true
-                            } else {
-                                viewModel.register(familyID, username, password)
-                                navController.navigate(Landing.route);
+                            }
+                            else{
+                                familyDatabase.userNameExists(familyID,username) { exists ->
+                                    if (exists) {
+                                        showUsernameDialog = true
+                                    }
+                                    else{
+                                        viewModel.register(familyID, username, password)
+                                        navController.navigate(Landing.route);
+                                    }
+                                }
                             }
                         }
                     },
@@ -171,6 +180,9 @@ fun RegisterScreen(navController: NavHostController, viewModel: RegisterViewMode
         // if family ID already exist, show the dialog
         FamilyExistDialog(showDialog) {
             showDialog = false
+        }
+        UsernameExistDialog(showUsernameDialog){
+            showUsernameDialog = false
         }
     }
 }
@@ -287,3 +299,18 @@ fun FamilyExistDialog(showDialog: Boolean, onDismiss: () -> Unit) {
     }
 }
 
+@Composable
+fun UsernameExistDialog(showDialog: Boolean, onDismiss: () -> Unit) {
+    if (showDialog) {
+        AlertDialog(
+            onDismissRequest = onDismiss,
+            title = { Text(text = "Error") },
+            text = { Text("Username already exists.") },
+            confirmButton = {
+                TextButton(onClick = onDismiss) {
+                    Text("OK")
+                }
+            }
+        )
+    }
+}

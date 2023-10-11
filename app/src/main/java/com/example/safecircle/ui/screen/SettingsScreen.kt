@@ -19,6 +19,7 @@ import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
+import com.example.safecircle.Landing
 import com.example.safecircle.Login
 import com.example.safecircle.database.Child
 import com.example.safecircle.database.FamilyDatabase
@@ -213,31 +214,47 @@ fun SettingsScreen(navController: NavHostController) {
                         // Logic to create parent account goes here
                         Button(
                             onClick = {
+
                                 familyId?.let { famId ->
-                                    // Assuming you have fields called parentUsername and parentPassword for input
-                                    val newParent =
-                                        Parent(parentUsername.value.text, parentPassword.value.text)
-
-                                    familyDatabase.addNewParentToFamily(famId, newParent,
-                                        onSuccess = {
+                                    familyDatabase.userNameExists(famId,parentUsername.value.text) { exists ->
+                                        if (exists) {
                                             Toast.makeText(
                                                 context,
-                                                "Parent account ${parentUsername.value.text} has been created",
-                                                Toast.LENGTH_SHORT
-                                            ).show()
-
-                                            // Clear the textfields
-                                            parentUsername.value = TextFieldValue("")
-                                            parentPassword.value = TextFieldValue("")
-                                        },
-                                        onFailure = { errorMsg ->
-                                            Toast.makeText(
-                                                context,
-                                                errorMsg,
+                                                "Parent account ${parentUsername.value.text} already exist in the database",
                                                 Toast.LENGTH_SHORT
                                             ).show()
                                         }
-                                    )
+                                        else{
+                                            val newParent =
+                                                Parent(parentUsername.value.text, parentPassword.value.text)
+
+                                            familyDatabase.addNewParentToFamily(famId, newParent,
+                                                onSuccess = {
+                                                    Toast.makeText(
+                                                        context,
+                                                        "Parent account ${parentUsername.value.text} has been created",
+                                                        Toast.LENGTH_SHORT
+                                                    ).show()
+
+                                                    // Clear the textfields
+                                                    parentUsername.value = TextFieldValue("")
+                                                    parentPassword.value = TextFieldValue("")
+                                                },
+                                                onFailure = { errorMsg ->
+                                                    Toast.makeText(
+                                                        context,
+                                                        errorMsg,
+                                                        Toast.LENGTH_SHORT
+                                                    ).show()
+                                                }
+                                            )
+                                        }
+                                    }
+
+
+
+                                    // Assuming you have fields called parentUsername and parentPassword for input
+
                                 }
                             }, colors = ButtonDefaults.buttonColors(
                                 containerColor = YellowPrimary,
@@ -264,18 +281,33 @@ fun SettingsScreen(navController: NavHostController) {
 
                         Button(
                             onClick = {
-                                familyId?.let {
-                                    val newChild = Child(childName.value.text, childCode.value.text)
-                                    familyDatabase.addChildToFamily(it, newChild)
-                                    Toast.makeText(
-                                        context,
-                                        "Account ${childName.value.text} has been created",
-                                        Toast.LENGTH_SHORT
-                                    ).show()
+                                familyId?.let {famId ->
+                                    familyDatabase.userNameExists(famId,childName.value.text) { exists ->
+                                        if (exists) {
+                                            Toast.makeText(
+                                                context,
+                                                "Child account ${childName.value.text} already exist in the database",
+                                                Toast.LENGTH_SHORT
+                                            ).show()
 
-                                    childCode.value = TextFieldValue("")
-                                    childName.value = TextFieldValue("")
+                                        }
+                                        else {
+                                            val newChild = Child(childName.value.text, childCode.value.text)
+                                            familyDatabase.addChildToFamily(famId, newChild)
+                                            Toast.makeText(
+                                                context,
+                                                "Account ${childName.value.text} has been created",
+                                                Toast.LENGTH_SHORT
+                                            ).show()
+                                            childCode.value = TextFieldValue("")
+                                            childName.value = TextFieldValue("")
+                                        }
+                                    }
                                 }
+
+
+
+
                             },
                             colors = ButtonDefaults.buttonColors(
                                 containerColor = YellowPrimary,
