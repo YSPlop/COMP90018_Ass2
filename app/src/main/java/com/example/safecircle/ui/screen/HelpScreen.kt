@@ -1,8 +1,16 @@
 package com.example.safecircle.ui.screen
 
+import android.app.PendingIntent
+import android.app.PendingIntent.getBroadcast
+import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.net.Uri
+import android.telephony.SmsManager
+import android.util.Log
 import android.widget.Toast
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -19,22 +27,55 @@ import androidx.compose.material3.ModalNavigationDrawer
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.content.ContextCompat
+import androidx.core.content.ContextCompat.startActivity
 import androidx.navigation.NavHostController
 import com.example.safecircle.ui.components.AppDrawer
 import com.example.safecircle.ui.components.AppTopBar
 import com.example.safecircle.ui.theme.CyanSecondary
+import com.example.safecircle.ui.theme.YellowPrimary
 import com.example.safecircle.utils.PreferenceHelper
+import com.google.accompanist.permissions.rememberPermissionState
+import java.lang.Exception
 
 
 @Composable
 fun HelpScreen(navController: NavHostController) {
     val drawerState = rememberDrawerState(DrawerValue.Closed)
+
+//    val requestSendSMSPermissionLauncher = rememberUpdatedState(
+//        rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) {
+//            isGranted : Boolean ->{
+//
+//        }
+//        }
+//    ).value
+//
+//    val context = LocalContext.current
+//
+//    if (ContextCompat.checkSelfPermission(
+//            context,
+//            android.Manifest.permission.SEND_SMS
+//        ) != PackageManager.PERMISSION_GRANTED
+//    ) {
+//        requestSendSMSPermissionLauncher.launch(android.Manifest.permission.SEND_SMS)
+//    } else {
+//        Toast.makeText(
+//            context,
+//            "Please give SMS permissions to the app",
+//            Toast.LENGTH_LONG
+//        ).show()
+//        requestSendSMSPermissionLauncher.launch(android.Manifest.permission.SEND_SMS)
+//    }
+
 
     ModalNavigationDrawer(
         drawerState = drawerState,
@@ -60,6 +101,8 @@ fun HelpScreen(navController: NavHostController) {
             }
         }
     }
+
+
 }
 @Composable
 fun helpPage(
@@ -72,18 +115,29 @@ fun helpPage(
     val emergencyContactName = preferenceHelper.getUsername()
 
 
-    openDialer(emergencyContactNumber, emergencyContactName)
+    openDialer(emergencyContactNumber, emergencyContactName, context)
 
     val tripleZero = "000"
 
-    openDialer(tripleZero, "POLICE")
+    openDialer(tripleZero, "POLICE", context)
+
+    val textMessageToSend = "Your child has clicked the emergency text button, please check on them"
+
+    val number = emergencyContactNumber.toString()
+
+    messageButton(
+        emergencyContactNumber = number,
+        textMessageToSend = textMessageToSend,
+        context = context
+    )
 }
 
 
 @Composable
 fun openDialer(
     emergencyContactNumber: String?,
-    emergencyContactName: String?
+    emergencyContactName: String?,
+    context: Context,
     ) {
 
     // in the below line, we are
@@ -96,7 +150,7 @@ fun openDialer(
 
     // on below line we are creating
     // a variable for a context
-    val ctx = LocalContext.current
+    val ctx = context
 
     // on below line we are creating a column
     Column(
@@ -155,5 +209,51 @@ fun openDialer(
                 )
             }
         }
+    }
+}
+
+@Composable
+fun messageButton(
+    emergencyContactNumber: String,
+    textMessageToSend: String,
+    context: Context,
+){
+    ElevatedButton(
+        onClick = {
+            sendTextMessage(context, emergencyContactNumber, textMessageToSend)
+        },
+        colors = ButtonDefaults.buttonColors(
+            containerColor = YellowPrimary,
+            contentColor = Color.White
+        ),
+        modifier = Modifier
+            .padding(horizontal = 15.dp)
+    ) {
+        Text(
+            text = "click to send text"
+        )
+    }
+
+}
+
+fun sendTextMessage(context: Context, phoneNumber: String, message: String) {
+
+    try{
+        // on below line initializing sms manager.
+        val smsManager: SmsManager = SmsManager.getDefault()
+        // on below line sending sms
+
+        smsManager.sendTextMessage(phoneNumber, null, message, null, null)
+
+    }catch(e: Exception){
+        // on below line handling error and
+        // displaying toast message.
+        Toast.makeText(
+            context,
+            "Error : " + e.message,
+            Toast.LENGTH_LONG
+        ).show()
+
+        e.message?.let { Log.d("MyTag", it) }
     }
 }
