@@ -257,59 +257,59 @@ fun ChildMapScreen(navController: NavHostController) {
                             .fillMaxWidth()
                     )
 
-                    Slider(
-                        value = selectedRadius,
-                        onValueChange = { newValue ->
-                            val updatedMarker = selectedEnhancedMarker?.copy(
-                                properties = mutableStateOf(
-                                    selectedEnhancedMarker.properties.value.copy(radius = newValue)
-                                )
-                            )
-                            if (updatedMarker != null && selectedMarkerId.value != null) {
-                                markers.value = markers.value.toMutableMap().apply {
-                                    this[selectedMarkerId.value!!] = updatedMarker
-                                }
-                            }
-                        },
-                        valueRange = 30f..500f,
-                        modifier = Modifier.padding(all = 16.dp)
-                    )
+//                    Slider(
+//                        value = selectedRadius,
+//                        onValueChange = { newValue ->
+//                            val updatedMarker = selectedEnhancedMarker?.copy(
+//                                properties = mutableStateOf(
+//                                    selectedEnhancedMarker.properties.value.copy(radius = newValue)
+//                                )
+//                            )
+//                            if (updatedMarker != null && selectedMarkerId.value != null) {
+//                                markers.value = markers.value.toMutableMap().apply {
+//                                    this[selectedMarkerId.value!!] = updatedMarker
+//                                }
+//                            }
+//                        },
+//                        valueRange = 30f..500f,
+//                        modifier = Modifier.padding(all = 16.dp)
+//                    )
                     Text(text = "${(selectedEnhancedMarker?.properties?.value?.radius ?: 100f).toInt()} meters",)
 
-                    Button(
-                        // Delete marker for this child
-                        onClick = {
-                            markers.value.remove(selectedMarkerId.value)
-                            familyID?.let { famId ->
-                                objectID?.let { objId ->
-                                    familyDatabase.pushMarkersToChild(famId, objId, markers.value)
-                                }
-                            }
-                            // Update the last marker state to current
-                            updateLastKnownMarkers()
-                            selectedMarkerId.value = null
-                        },
-                        modifier = Modifier.padding(top = 8.dp)
-                    ) {
-                        Text(text = "Remove Marker")
-                    }
-                    Button(
-                        // Save button activated when changes are uncommitted to firebase
-                        enabled = hasMarkersChanged(),
-                        // Save changes for markers
-                        onClick = {
-                            familyID?.let { famId ->
-                                objectID?.let { objId ->
-                                    familyDatabase.pushMarkersToChild(famId, objId, markers.value)
-                                }
-                            }
-                            // Update the last marker state to current
-                            updateLastKnownMarkers()
-                        },
-                        modifier = Modifier.padding(top = 8.dp)
-                    ) {
-                        Text(text = "Save")
-                    }
+//                    Button(
+//                        // Delete marker for this child
+//                        onClick = {
+//                            markers.value.remove(selectedMarkerId.value)
+//                            familyID?.let { famId ->
+//                                objectID?.let { objId ->
+//                                    familyDatabase.pushMarkersToChild(famId, objId, markers.value)
+//                                }
+//                            }
+//                            // Update the last marker state to current
+//                            updateLastKnownMarkers()
+//                            selectedMarkerId.value = null
+//                        },
+//                        modifier = Modifier.padding(top = 8.dp)
+//                    ) {
+//                        Text(text = "Remove Marker")
+//                    }
+//                    Button(
+//                        // Save button activated when changes are uncommitted to firebase
+//                        enabled = hasMarkersChanged(),
+//                        // Save changes for markers
+//                        onClick = {
+//                            familyID?.let { famId ->
+//                                objectID?.let { objId ->
+//                                    familyDatabase.pushMarkersToChild(famId, objId, markers.value)
+//                                }
+//                            }
+//                            // Update the last marker state to current
+//                            updateLastKnownMarkers()
+//                        },
+//                        modifier = Modifier.padding(top = 8.dp)
+//                    ) {
+//                        Text(text = "Save")
+//                    }
                 }
             }
         }

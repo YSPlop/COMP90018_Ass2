@@ -8,7 +8,10 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import com.example.safecircle.database.FamilyLocationDao
 import com.example.safecircle.ui.components.TextIcon
+import com.example.safecircle.ui.screen.EnhancedMarkerState
+import com.example.safecircle.viewmodel.CircleViewModel
 import com.example.safecircle.viewmodel.MapViewModel
 import com.google.android.gms.maps.CameraUpdate
 import com.google.android.gms.maps.CameraUpdateFactory
@@ -18,7 +21,10 @@ import com.google.maps.android.compose.MarkerComposable
 import com.google.maps.android.compose.MarkerState
 
 @Composable
-fun MapMarkerOverlay(viewModel: MapViewModel, username: String?=null) {
+fun MapMarkerOverlay(viewModel: MapViewModel,
+                     username: String?=null,
+                     familyId: String
+) {
     Log.d("MapMarkerTest","username is: $username");
     val cameraPositionState = viewModel.cameraState
     var dataLoaded by remember {
@@ -31,6 +37,7 @@ fun MapMarkerOverlay(viewModel: MapViewModel, username: String?=null) {
             it.key == username
         }
     }
+
     LaunchedEffect(viewModel.memberLocations) {
         if (!dataLoaded) {
             viewModel.fetchMemberLocationsAsync()
@@ -43,6 +50,7 @@ fun MapMarkerOverlay(viewModel: MapViewModel, username: String?=null) {
             cameraPositionState.animate(cameraUpdate, 500)
         }
     }
+
     Log.d("MapMarkerOverlay", "memberLocations = $memberLocations")
     memberLocations.entries
         .map {

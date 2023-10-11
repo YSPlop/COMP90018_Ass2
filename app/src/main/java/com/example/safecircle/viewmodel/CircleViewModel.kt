@@ -13,9 +13,12 @@ import com.google.android.gms.maps.model.LatLng
 import com.google.maps.android.compose.CameraPositionState
 
 
-class MapViewModel(
-    private val familyId: String
+class CircleViewModel(
+    private val familyId: String,
+    private val username: String
 ): ViewModel() {
+    val markers = mutableStateOf(mutableMapOf<Int, EnhancedMarkerState>())
+    val lastKnownMarkers = mutableStateOf(mutableMapOf<Int, EnhancedMarkerState>())
     var memberLocations by mutableStateOf(mapOf<String, LatLng>())
         private set
     private var _familyLocationDao = FamilyLocationDao.getInstance(familyId)
@@ -31,7 +34,13 @@ class MapViewModel(
         val cameraPosition = CameraPosition.fromLatLngZoom(uniMelbCoord, 15f)
         cameraState = CameraPositionState(cameraPosition)
     }
-    fun fetchMemberLocationsAsync() {
-        _familyLocationDao.getMembersLocationsAsync { memberLocations = it }
+    fun fetchMarkers(){
+        _familyLocationDao.getMarkersFromChild(familyId, username){retrievedMarkers ->
+            if(retrievedMarkers != null){
+                markers.value = retrievedMarkers
+                // Update the last marker state to current
+                lastKnownMarkers.value = markers.value.toMutableMap()
+            }
+        }
     }
 }

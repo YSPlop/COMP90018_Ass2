@@ -59,7 +59,9 @@ fun NavigationComposable(navController: NavHostController){
         composable(
             Map.routeTemplate,
             arguments = listOf(navArgument("username") { nullable = true })) {
-           MapsScreen(navController, it.arguments?.getString("username"))
+            if (familyId != null) {
+                MapsScreen(navController, it.arguments?.getString("username"), familyId)
+            }
         }
         composable(Settings.route){
             SettingsScreen(navController)
