@@ -230,7 +230,8 @@ fun messageButton(
             .padding(horizontal = 15.dp)
     ) {
         Text(
-            text = "click to send text"
+            text = "click to send text",
+            color = Color.Black
         )
     }
 
