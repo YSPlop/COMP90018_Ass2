@@ -1,12 +1,15 @@
 package com.example.safecircle.ui.screen
 
+import android.app.Activity
 import android.app.PendingIntent
 import android.app.PendingIntent.getBroadcast
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.Uri
+import android.os.Build
 import android.telephony.SmsManager
+import android.telephony.SubscriptionManager
 import android.util.Log
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -36,13 +39,17 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
+import androidx.core.content.ContextCompat.getSystemService
 import androidx.core.content.ContextCompat.startActivity
+import androidx.core.content.getSystemService
 import androidx.navigation.NavHostController
 import com.example.safecircle.ui.components.AppDrawer
 import com.example.safecircle.ui.components.AppTopBar
 import com.example.safecircle.ui.theme.CyanSecondary
 import com.example.safecircle.ui.theme.YellowPrimary
 import com.example.safecircle.utils.PreferenceHelper
+import com.google.accompanist.permissions.ExperimentalPermissionsApi
+import com.google.accompanist.permissions.isGranted
 import com.google.accompanist.permissions.rememberPermissionState
 import java.lang.Exception
 
@@ -51,15 +58,19 @@ import java.lang.Exception
 fun HelpScreen(navController: NavHostController) {
     val drawerState = rememberDrawerState(DrawerValue.Closed)
 
+
+
+
+
 //    val requestSendSMSPermissionLauncher = rememberUpdatedState(
 //        rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) {
-//            isGranted : Boolean ->{
+//            if (it){
+//                smsSensorManager = SmsManager(this){
 //
-//        }
+//                }
+//            }
 //        }
 //    ).value
-//
-//    val context = LocalContext.current
 //
 //    if (ContextCompat.checkSelfPermission(
 //            context,
@@ -220,7 +231,25 @@ fun messageButton(
 ){
     ElevatedButton(
         onClick = {
-            sendTextMessage(context, emergencyContactNumber, textMessageToSend)
+            val activity = context as Activity
+
+            val result = requestSmsPermission(activity, 123)
+
+            if (result) {
+                Log.i("SMS", "permissions granted")
+            }else{
+                Log.i("SMS", "no permissions ")
+                requestSmsPermission(activity, 123)
+            }
+
+//            startSMSRetrieverClient(context)
+
+            val newResult = requestSmsPermission(activity, 123)
+            if (newResult) {
+                Log.i("SMS", "permissions are working")
+                sendTextMessage1(context, emergencyContactNumber, textMessageToSend, activity)
+            }
+
         },
         colors = ButtonDefaults.buttonColors(
             containerColor = YellowPrimary,
@@ -237,14 +266,16 @@ fun messageButton(
 
 }
 
-fun sendTextMessage(context: Context, phoneNumber: String, message: String) {
+fun sendTextMessage1(context: Context, phoneNumber: String, message: String, activity: Activity) {
+
 
     try{
         // on below line initializing sms manager.
+        Log.i("SMS","I am about to start the manager")
         val smsManager: SmsManager = SmsManager.getDefault()
-        // on below line sending sms
+        Log.i("SMS","I am about to send the message")
+        smsManager.sendTextMessage(phoneNumber, null, message, null, null, 1)
 
-        smsManager.sendTextMessage(phoneNumber, null, message, null, null)
 
     }catch(e: Exception){
         // on below line handling error and
@@ -252,9 +283,20 @@ fun sendTextMessage(context: Context, phoneNumber: String, message: String) {
         Toast.makeText(
             context,
             "Error : " + e.message,
-            Toast.LENGTH_LONG
+            Toast.LENGTH_SHORT
         ).show()
 
-        e.message?.let { Log.d("MyTag", it) }
+        e.message?.let { Log.d("SMS", it)
+        }
+    }
+
+}
+fun requestSmsPermission(activity: Activity, requestCode: Int): Boolean {
+
+    if (activity.checkSelfPermission(android.Manifest.permission.SEND_SMS) == PackageManager.PERMISSION_GRANTED) {
+        return true
+    } else {
+        activity.requestPermissions(arrayOf(android.Manifest.permission.SEND_SMS), requestCode)
+        return false
     }
 }
