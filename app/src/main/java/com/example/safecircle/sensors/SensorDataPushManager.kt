@@ -23,37 +23,59 @@ class SensorDataPushManager(private val sensorService: ForegroundSensorService) 
     private var userRole: Role? = null
     private var job: Job? = null
 
+    private var savedTemperature: Float = 256f;
+    private var savedBattery: Float = -1f;
+
     fun start() {
         job = CoroutineScope(Dispatchers.IO).launch {
             while (isActive) {
                 Log.i("SensorDataPushManager", "Coroutine update.")
-                if (hasUser && FamilyDatabase.getInstance() != null) {
-                    val db = FamilyDatabase.getInstance()
-                    Log.i("SensorDataPushManager", "Get database.")
-                    if (userRole == Role.CHILD) {
-
-                        Log.i("SensorDataPushManager", "User role is child.")
-
-                        // Push child temperature to database.
-                        if (sensorService.isTemperatureSensorAvailable) db.setChildTemperature(
-                            familyId,
-                            username,
-                            sensorService.temperatureValue
-                        )
-
-                        // Push child battery to database.
-                        if (sensorService.isBatterySensorAvailable) db.setChildBattery(
-                            familyId, username, sensorService.batteryValue
-                        )
-                    }
-                }
+                pushData();
                 delay(interval)
             }
         }
     }
 
-    fun stop(){
+    fun stop() {
         job?.cancel()
+    }
+
+    /**
+     * Push child sensor data to remote database.
+     */
+    private fun pushData() {
+        if (!hasUser || FamilyDatabase.getInstance() == null) return
+        if (userRole != Role.CHILD) {
+            Log.i(
+                "SensorDataPushManager",
+                "User role is not child, will not push sensor data to remote database."
+            )
+            return
+        };
+
+        val db = FamilyDatabase.getInstance()
+        Log.i("SensorDataPushManager", "Get database.")
+
+        // Push child temperature to database.
+        if (sensorService.isTemperatureSensorAvailable
+            && sensorService.temperatureValue != savedTemperature
+        ) {
+            db.setChildTemperature(
+                familyId,
+                username,
+                sensorService.temperatureValue
+            )
+        }
+
+        // Push child battery to database.
+        if (sensorService.isBatterySensorAvailable
+            && sensorService.batteryValue != savedBattery
+        ) {
+            db.setChildBattery(
+                familyId, username, sensorService.batteryValue
+            )
+        }
+
     }
 
     /**

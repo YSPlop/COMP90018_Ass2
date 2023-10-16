@@ -149,7 +149,8 @@ class ForegroundSensorService: Service()  {
     fun startNoiseSensor() {
         noiseSensorManager = NoiseSensorManager(this){value ->
             noiseValue = value
-            //Log.i("test", "Noise sensor value: " + value)
+            Log.i("test", "Noise sensor value: " + value)
+            if(noiseValue > 600) sendLoudNoiseNotification();
         }
         noiseSensorManager.init()
         isNoiseSensorAvailable = true
@@ -169,6 +170,17 @@ class ForegroundSensorService: Service()  {
 
         val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
         notificationManager.notify(2, notification)
+    }
+
+    private fun sendLoudNoiseNotification() {
+        val notification = NotificationCompat.Builder(this, "SensorChannel")
+            .setContentTitle("Loud Noise Detected")
+            .setContentText("")
+            .setSmallIcon(R.drawable.family) // replace with your icon
+            .build()
+
+        val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+        notificationManager.notify(3, notification)
     }
 
     override fun onBind(intent: Intent?): IBinder? {
