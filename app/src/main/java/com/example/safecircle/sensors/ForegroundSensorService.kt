@@ -149,7 +149,7 @@ class ForegroundSensorService: Service()  {
     fun startNoiseSensor() {
         noiseSensorManager = NoiseSensorManager(this){value ->
             noiseValue = value
-            Log.i("test", "Noise sensor value: " + value)
+            //Log.i("test", "Noise sensor value: " + value)
             if(noiseValue > 600) sendLoudNoiseNotification();
         }
         noiseSensorManager.init()

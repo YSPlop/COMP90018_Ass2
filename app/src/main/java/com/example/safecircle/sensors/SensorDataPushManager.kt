@@ -3,6 +3,7 @@ package com.example.safecircle.sensors
 import android.util.Log
 import com.example.safecircle.database.FamilyDatabase
 import com.example.safecircle.database.Role
+import com.google.firebase.database.ValueEventListener
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -78,6 +79,13 @@ class SensorDataPushManager(private val sensorService: ForegroundSensorService) 
 
     }
 
+    fun onChildrenSensorValuesChanged(name: String, battery: Float, temperature: Float) {
+        Log.i(
+            "SensorDataPushManager",
+            "Child sensor values changed: " + username + " Battery: " + battery + " Temperature: " + temperature
+        )
+    }
+
     /**
      *  Sets the target user for updating sensor information to database.
      */
@@ -87,6 +95,16 @@ class SensorDataPushManager(private val sensorService: ForegroundSensorService) 
         this.username = username
         this.userRole = userRole
         Log.i("SensorDataPushManager", "Set user: " + username)
+        if (userRole == Role.PARENT) {
+            FamilyDatabase.getInstance()
+                .observeChildSensorData(familyId) { name, battery, temperature ->
+                    onChildrenSensorValuesChanged(
+                        name,
+                        battery,
+                        temperature
+                    )
+                }
+        }
     }
 
     /**
@@ -94,6 +112,9 @@ class SensorDataPushManager(private val sensorService: ForegroundSensorService) 
      * Sensor information will not be pushed to database when there is no user set.
      */
     fun unsetUser() {
+        if (userRole == Role.PARENT) {
+            if (familyId != null) FamilyDatabase.getInstance().removeChildSensorListener(familyId!!)
+        }
         this.hasUser = false
         this.familyId = null
         this.username = null
