@@ -26,6 +26,7 @@ import com.example.safecircle.services.LocationPushService
 import com.example.safecircle.ui.theme.SafeCircleTheme
 import com.example.safecircle.utils.PreferenceHelper
 
+
 class MainActivity : ComponentActivity() {
 //    private val requestRecordAudioPermissionLauncher =
 //        registerForActivityResult(ActivityResultContracts.RequestPermission()) {
@@ -44,6 +45,23 @@ class MainActivity : ComponentActivity() {
             val manager = getSystemService(NotificationManager::class.java)
             manager.createNotificationChannel(channel)
         }
+
+        val requestPermissionLauncher =
+            registerForActivityResult(
+                ActivityResultContracts.RequestPermission()
+            ) { isGranted: Boolean ->
+                if (isGranted) {
+                    // Permission is granted. Continue the action or workflow in your
+                    // app.
+                } else {
+                    // Explain to the user that the feature is unavailable because the
+                    // feature requires a permission that the user has denied. At the
+                    // same time, respect the user's decision. Don't link to system
+                    // settings in an effort to convince the user to change their
+                    // decision.
+                }
+            }
+
 
 //        val serviceIntent = Intent(this, ForegroundSensorService::class.java)
 //        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
