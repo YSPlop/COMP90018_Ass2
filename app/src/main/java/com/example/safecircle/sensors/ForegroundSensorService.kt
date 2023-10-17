@@ -10,20 +10,17 @@ import androidx.compose.runtime.mutableDoubleStateOf
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.platform.LocalContext
 import androidx.core.app.NotificationCompat
 import com.example.safecircle.R
 import com.example.safecircle.database.FamilyLocationDao
 import com.example.safecircle.database.Role
 import com.example.safecircle.interfaces.LocationClient
-import com.example.safecircle.services.LocationPushService
 import com.example.safecircle.utils.DefaultLocationClient
 import com.example.safecircle.utils.PreferenceHelper
 import com.google.android.gms.location.LocationServices
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
@@ -54,7 +51,7 @@ class ForegroundSensorService: Service()  {
         private set
 
     // Updates realtime sensor data to database at a set interval.
-    private var sensorDataPushManager: SensorDataPushManager = SensorDataPushManager(this)
+    private lateinit var sensorDataPushManager: SensorDataPushManager
 
     // Properties for location updates
     private val serviceScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
@@ -72,6 +69,8 @@ class ForegroundSensorService: Service()  {
 
     override fun onCreate() {
         super.onCreate()
+        //initialize the sensorDataPushManager
+        sensorDataPushManager = SensorDataPushManager(this, this)
 
         // Initialize location client here, moved from LocationPushService
         locationClient = DefaultLocationClient(
@@ -97,15 +96,9 @@ class ForegroundSensorService: Service()  {
 
         batterySensorManager = BatterySensorManager(this) { batteryPercentage ->
             batteryValue = batteryPercentage
-            if (batteryPercentage <= 30) {
-                sendBatteryLowNotification()
-            }
         }
         batterySensorManager.registerListener()
         isBatterySensorAvailable = true
-
-        // TODO: add more sensor managers
-        // val anotherSensorManager = AnotherSensorManager(this) { ... }
 
         // Start pushing sensor data to database at a set interval.
         sensorDataPushManager.start()
@@ -131,21 +124,6 @@ class ForegroundSensorService: Service()  {
         return START_NOT_STICKY
     }
 
-    /**
-     *  Sets the target user for updating sensor information to database.
-     */
-    fun setUser(familyId: String, username: String, userRole: Role){
-        sensorDataPushManager.setUser(familyId, username, userRole)
-    }
-
-    /**
-     * Unsets the target user for updating sensor information to database.
-     * Sensor information will not be pushed to database when there is no user set.
-     */
-    fun unsetUser(){
-        sensorDataPushManager.unsetUser()
-    }
-
     fun startNoiseSensor() {
         noiseSensorManager = NoiseSensorManager(this){value ->
             noiseValue = value
@@ -161,16 +139,6 @@ class ForegroundSensorService: Service()  {
         noiseSensorManager?.end()
     }
 
-    private fun sendBatteryLowNotification() {
-        val notification = NotificationCompat.Builder(this, "SensorChannel")
-            .setContentTitle("Battery Low")
-            .setContentText("Battery level is below 30%")
-            .setSmallIcon(R.drawable.family) // replace with your icon
-            .build()
-
-        val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-        notificationManager.notify(2, notification)
-    }
 
     private fun sendLoudNoiseNotification() {
         val notification = NotificationCompat.Builder(this, "SensorChannel")

@@ -1,9 +1,16 @@
 package com.example.safecircle.sensors
 
+import android.app.NotificationManager
+import android.content.Context
 import android.util.Log
+import androidx.core.app.NotificationCompat
+import androidx.core.content.ContextCompat.getSystemService
+import com.example.safecircle.R
 import com.example.safecircle.database.FamilyDatabase
 import com.example.safecircle.database.Role
-import com.google.firebase.database.ValueEventListener
+import com.example.safecircle.ui.screen.PersonInfo
+import com.example.safecircle.utils.GlobalState
+import com.example.safecircle.utils.PreferenceHelper
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -14,23 +21,34 @@ import kotlinx.coroutines.launch
 /**
  * Pushes realtime sensor data to database at a set interval.
  */
-class SensorDataPushManager(private val sensorService: ForegroundSensorService) {
+class SensorDataPushManager(private val context: Context, private val sensorService: ForegroundSensorService) {
 
     var interval: Long = 10000
+    val preferenceHelper = PreferenceHelper(context)
 
-    private var hasUser: Boolean = false
-    private var familyId: String? = null
-    private var username: String? = null
-    private var userRole: Role? = null
+//    private var hasUser: Boolean = true
+    private var familyId: String? = preferenceHelper.getFamilyID()
+    private var username: String? = preferenceHelper.getUsername()
+    private var userRole: Role? = preferenceHelper.getRole()
     private var job: Job? = null
+
 
     private var savedTemperature: Float = 256f;
     private var savedBattery: Float = -1f;
+
+    //notification time stamp
+    private var lastBatteryNotificationTime: Long = 0
+    private var lastTemperatureNotificationTime: Long = 0
+
+    // Cooldown period (e.g., 15 minutes)
+    private val NOTIFICATION_COOLDOWN = 15 * 60 * 1000
 
     fun start() {
         job = CoroutineScope(Dispatchers.IO).launch {
             while (isActive) {
                 Log.i("SensorDataPushManager", "Coroutine update.")
+
+                pullData()
                 pushData();
                 delay(interval)
             }
@@ -42,10 +60,42 @@ class SensorDataPushManager(private val sensorService: ForegroundSensorService) 
     }
 
     /**
+     * Fetch child sensor data to from database.
+     */
+    private fun pullData() {
+        if (userRole != Role.PARENT) {
+            Log.i(
+                "SensorDataPushManager",
+                "User role is not parent, will not pull sensor data from remote database."
+            )
+            return
+        }
+        val db = FamilyDatabase.getInstance()
+        db.getAllChildrenInfo(familyId!!) {children ->
+            GlobalState.childList = children
+            // Logging each person's temperature and phoneBattery
+            children.forEach { person ->
+                Log.i("SensorDataPushManager", "Name: ${person.name}, Temperature: ${person.temperature}, Battery: ${person.phoneBattery}")
+                if (person.phoneBattery.toFloat() <= 20.0 && canSendBatteryNotification()) {
+                    sendBatteryLowNotification(person.name)
+                    lastBatteryNotificationTime = System.currentTimeMillis()
+                }
+
+                if (person.temperature.toFloat() >= 40.0 && canSendTemperatureNotification()) {
+                    sendTemperatureHighNotification(person.name)
+                    lastTemperatureNotificationTime = System.currentTimeMillis()
+                }
+
+            }
+        }
+    }
+
+
+    /**
      * Push child sensor data to remote database.
      */
     private fun pushData() {
-        if (!hasUser || FamilyDatabase.getInstance() == null) return
+//        if (!hasUser || FamilyDatabase.getInstance() == null) return
         if (userRole != Role.CHILD) {
             Log.i(
                 "SensorDataPushManager",
@@ -57,6 +107,7 @@ class SensorDataPushManager(private val sensorService: ForegroundSensorService) 
         val db = FamilyDatabase.getInstance()
         Log.i("SensorDataPushManager", "Get database.")
 
+        Log.i("SensorDataPushManager", "familyid: $familyId, username: $username, temp: ${sensorService.temperatureValue}")
         // Push child temperature to database.
         if (sensorService.isTemperatureSensorAvailable
             && sensorService.temperatureValue != savedTemperature
@@ -79,46 +130,35 @@ class SensorDataPushManager(private val sensorService: ForegroundSensorService) 
 
     }
 
-    fun onChildrenSensorValuesChanged(name: String, battery: Float, temperature: Float) {
-        Log.i(
-            "SensorDataPushManager",
-            "Child sensor values changed: " + username + " Battery: " + battery + " Temperature: " + temperature
-        )
+    // helper function for notification sending
+    private fun canSendBatteryNotification(): Boolean {
+        return (System.currentTimeMillis() - lastBatteryNotificationTime) > NOTIFICATION_COOLDOWN
     }
 
-    /**
-     *  Sets the target user for updating sensor information to database.
-     */
-    fun setUser(familyId: String, username: String, userRole: Role) {
-        this.hasUser = true
-        this.familyId = familyId
-        this.username = username
-        this.userRole = userRole
-        Log.i("SensorDataPushManager", "Set user: " + username)
-        if (userRole == Role.PARENT) {
-            FamilyDatabase.getInstance()
-                .observeChildSensorData(familyId) { name, battery, temperature ->
-                    onChildrenSensorValuesChanged(
-                        name,
-                        battery,
-                        temperature
-                    )
-                }
-        }
+    private fun canSendTemperatureNotification(): Boolean {
+        return (System.currentTimeMillis() - lastTemperatureNotificationTime) > NOTIFICATION_COOLDOWN
+    }
+    private fun sendBatteryLowNotification(name: String) {
+        val notification = NotificationCompat.Builder(context, "SensorChannel")
+            .setContentTitle("Battery Low")
+            .setContentText("Battery level for $name is below 20%")
+            .setSmallIcon(R.drawable.family) // replace with your icon
+            .build()
+
+        val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+        notificationManager.notify(2, notification)
     }
 
-    /**
-     * Unsets the target user for updating sensor information to database.
-     * Sensor information will not be pushed to database when there is no user set.
-     */
-    fun unsetUser() {
-        if (userRole == Role.PARENT) {
-            if (familyId != null) FamilyDatabase.getInstance().removeChildSensorListener(familyId!!)
-        }
-        this.hasUser = false
-        this.familyId = null
-        this.username = null
-        this.userRole = null
-        Log.i("SensorDataPushManager", "Unset user.")
+    private fun sendTemperatureHighNotification(name: String) {
+        val notification = NotificationCompat.Builder(context, "SensorChannel")
+            .setContentTitle("High Temperature")
+            .setContentText("Detecting high temperature for $name")
+            .setSmallIcon(R.drawable.family) // replace with your icon
+            .build()
+
+        val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+        notificationManager.notify(4, notification)
     }
+
+
 }
