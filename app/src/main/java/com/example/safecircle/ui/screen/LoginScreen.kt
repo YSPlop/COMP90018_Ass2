@@ -205,6 +205,7 @@ fun LoginScreen(navController: NavHostController, viewModel: LoginViewModel) {
                                     ) { successfulLogin, message ->
                                         if (successfulLogin) {
                                             Log.i("test", "Parent login")
+
                                             navController.navigate(Dashboard.route)
                                         } else {
                                             errorMessage = message.toString()

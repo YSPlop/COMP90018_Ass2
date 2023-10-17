@@ -73,6 +73,7 @@ fun DashboardScreen(navController: NavHostController) {
 
     val familyDatabase: FamilyDatabase = FamilyDatabase()
     val username = preferenceHelper.getUsername()
+    val objectID = preferenceHelper.getObjectId()
 
     fun isServiceRunning(serviceClass: Class<*>): Boolean {
         val manager = context.getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
@@ -84,39 +85,68 @@ fun DashboardScreen(navController: NavHostController) {
         return false
     }
 
+//    LaunchedEffect(Unit) {
+//        // Start ForegroundSensorService
+//        Log.i("Dashboard", "objectId: $objectID")
+//        if (!isServiceRunning(ForegroundSensorService::class.java)) {
+////            ForegroundSensorService.getInstance()?.setUser(familyID.toString(), username.toString(), Role.PARENT)
+//            val serviceIntent = Intent(context, ForegroundSensorService::class.java)
+//            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+//                context.startForegroundService(serviceIntent)
+//            } else {
+//                context.startService(serviceIntent)
+//            }
+//        }
+//    }
+    fun startForegroundService(context: Context) {
+        val serviceIntent = Intent(context, ForegroundSensorService::class.java)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            context.startForegroundService(serviceIntent)
+        } else {
+            context.startService(serviceIntent)
+        }
+    }
+
     LaunchedEffect(Unit) {
         // Start ForegroundSensorService
+        Log.i("Dashboard", "objectId: $objectID")
+        val lastObjectID = preferenceHelper.getLastObjectID()
+
         if (!isServiceRunning(ForegroundSensorService::class.java)) {
-//            ForegroundSensorService.getInstance()?.setUser(familyID.toString(), username.toString(), Role.PARENT)
-            val serviceIntent = Intent(context, ForegroundSensorService::class.java)
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                context.startForegroundService(serviceIntent)
-            } else {
-                context.startService(serviceIntent)
-            }
+            // If service isn't running, start it
+            startForegroundService(context)
+        } else if (objectID != lastObjectID) {
+            // If service is running and objectId has changed, stop and then start it
+            val stopIntent = Intent(context, ForegroundSensorService::class.java)
+            context.stopService(stopIntent)
+            startForegroundService(context)
         }
+
+        // Store the current objectId as lastObjectID
+        preferenceHelper.setLastObjectID(objectID.toString())
     }
+
 
     // Check permissions and start service here.
-    val requestRecordAudioPermissionLauncher = rememberUpdatedState(
-        rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) {
-            if (it) {  // Permission granted
-                ForegroundSensorService.getInstance()?.startNoiseSensor()
-            }
-        }
-    ).value
+//    val requestRecordAudioPermissionLauncher = rememberUpdatedState(
+//        rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) {
+//            if (it) {  // Permission granted
+//                ForegroundSensorService.getInstance()?.startNoiseSensor()
+//            }
+//        }
+//    ).value
 
-    LaunchedEffect(Unit) {
-        if (ContextCompat.checkSelfPermission(
-                context,
-                android.Manifest.permission.RECORD_AUDIO
-            ) != PackageManager.PERMISSION_GRANTED
-        ) {
-            requestRecordAudioPermissionLauncher.launch(android.Manifest.permission.RECORD_AUDIO)
-        } else {
-            ForegroundSensorService.getInstance()?.startNoiseSensor()
-        }
-    }
+//    LaunchedEffect(Unit) {
+//        if (ContextCompat.checkSelfPermission(
+//                context,
+//                android.Manifest.permission.RECORD_AUDIO
+//            ) != PackageManager.PERMISSION_GRANTED
+//        ) {
+//            requestRecordAudioPermissionLauncher.launch(android.Manifest.permission.RECORD_AUDIO)
+//        } else {
+//            ForegroundSensorService.getInstance()?.startNoiseSensor()
+//        }
+//    }
 
     // Fetch children details on screen load
 //    LaunchedEffect(Unit) {

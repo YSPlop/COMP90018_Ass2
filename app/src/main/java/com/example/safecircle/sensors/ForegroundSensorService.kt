@@ -35,14 +35,15 @@ class ForegroundSensorService: Service()  {
         private set
     var temperatureValue: Float by mutableFloatStateOf(0.0f)
         private set
-
-    // Detects ambient noise.
-    lateinit var noiseSensorManager: NoiseSensorManager private set
-    var isNoiseSensorAvailable: Boolean by mutableStateOf(false)
-        private set
-    var noiseValue: Double by mutableDoubleStateOf(0.0)
-        private set
-
+//
+//    // Detects ambient noise.
+//    lateinit var noiseSensorManager: NoiseSensorManager private set
+//    var isNoiseSensorAvailable: Boolean by mutableStateOf(false)
+//        private set
+//    var noiseValue: Double by mutableDoubleStateOf(0.0)
+//        private set
+//
+//
     // Detects battery percentage.
     private lateinit var batterySensorManager: BatterySensorManager
     var isBatterySensorAvailable: Boolean by mutableStateOf(false)
@@ -51,7 +52,7 @@ class ForegroundSensorService: Service()  {
         private set
 
     // Updates realtime sensor data to database at a set interval.
-    private lateinit var sensorDataPushManager: SensorDataPushManager
+    var sensorDataPushManager: SensorDataPushManager? = null
 
     // Properties for location updates
     private val serviceScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
@@ -69,9 +70,6 @@ class ForegroundSensorService: Service()  {
 
     override fun onCreate() {
         super.onCreate()
-        //initialize the sensorDataPushManager
-        sensorDataPushManager = SensorDataPushManager(this, this)
-
         // Initialize location client here, moved from LocationPushService
         locationClient = DefaultLocationClient(
             applicationContext,
@@ -81,7 +79,7 @@ class ForegroundSensorService: Service()  {
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         val notification = NotificationCompat.Builder(this, "SensorChannel")
-            .setContentTitle("Monitoring: Location & Battery & Temperature & Noise")
+            .setContentTitle("Monitoring: Location & Battery & Temperature")
             .setSmallIcon(R.drawable.family) // replace with your icon
             .build()
 
@@ -100,8 +98,10 @@ class ForegroundSensorService: Service()  {
         batterySensorManager.registerListener()
         isBatterySensorAvailable = true
 
-        // Start pushing sensor data to database at a set interval.
-        sensorDataPushManager.start()
+        // Create a new instance
+        sensorDataPushManager = SensorDataPushManager(this, this)
+        //initialize the sensorDataPushManager
+        sensorDataPushManager!!.start()
 
         instance = this
 
@@ -124,21 +124,21 @@ class ForegroundSensorService: Service()  {
         return START_NOT_STICKY
     }
 
-    fun startNoiseSensor() {
-        noiseSensorManager = NoiseSensorManager(this){value ->
-            noiseValue = value
-            //Log.i("test", "Noise sensor value: " + value)
-            if(noiseValue > 600) sendLoudNoiseNotification();
-        }
-        noiseSensorManager.init()
-        isNoiseSensorAvailable = true
-    }
-
-    fun stopNoiseSensor() {
-        isNoiseSensorAvailable = false
-        noiseSensorManager?.end()
-    }
-
+//    fun startNoiseSensor() {
+//        noiseSensorManager = NoiseSensorManager(this){value ->
+//            noiseValue = value
+//            //Log.i("test", "Noise sensor value: " + value)
+//            if(noiseValue > 600) sendLoudNoiseNotification();
+//        }
+//        noiseSensorManager.init()
+//        isNoiseSensorAvailable = true
+//    }
+//
+//    fun stopNoiseSensor() {
+//        isNoiseSensorAvailable = false
+//        noiseSensorManager?.end()
+//    }
+//
 
     private fun sendLoudNoiseNotification() {
         val notification = NotificationCompat.Builder(this, "SensorChannel")
@@ -159,6 +159,9 @@ class ForegroundSensorService: Service()  {
         super.onDestroy()
         temperatureSensorManager.unregisterListener()
         batterySensorManager.unregisterListener()
+        // Cleanup the old instance if it exists
+        sensorDataPushManager?.cleanup()
+        sensorDataPushManager = null
         Log.i("test", "Foreground service Stopped")
     }
 }

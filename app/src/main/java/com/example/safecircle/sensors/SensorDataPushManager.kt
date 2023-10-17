@@ -23,6 +23,38 @@ import kotlinx.coroutines.launch
  */
 class SensorDataPushManager(private val context: Context, private val sensorService: ForegroundSensorService) {
 
+    companion object {
+        // Static counter for instances
+        private var instanceCount = 0
+        // Collection of active instances
+        private val activeInstances = mutableSetOf<SensorDataPushManager>()
+
+        // Static function to log active instances and their roles
+        fun logActiveInstances() {
+            Log.i("InstanceTracking", "Total active instances: $instanceCount")
+            activeInstances.forEach {
+                Log.i("InstanceTracking", "Instance role: ${it.userRole}")
+            }
+        }
+    }
+
+    init {
+        // Update the static variables when a new instance is created
+        instanceCount++
+        activeInstances.add(this)
+        logActiveInstances()
+    }
+
+    // Finalizer to update static variables when the instance is garbage collected
+    @Throws(Throwable::class)
+    protected fun finalize() {
+        instanceCount--
+        activeInstances.remove(this)
+    }
+
+
+
+
     var interval: Long = 10000
     val preferenceHelper = PreferenceHelper(context)
 
@@ -46,8 +78,7 @@ class SensorDataPushManager(private val context: Context, private val sensorServ
     fun start() {
         job = CoroutineScope(Dispatchers.IO).launch {
             while (isActive) {
-                Log.i("SensorDataPushManager", "Coroutine update.")
-
+                Log.i("SensorDataPushManager", "Coroutine update, role: $userRole")
                 pullData()
                 pushData();
                 delay(interval)
@@ -57,6 +88,19 @@ class SensorDataPushManager(private val context: Context, private val sensorServ
 
     fun stop() {
         job?.cancel()
+    }
+
+    fun cleanup() {
+        // Stop the running coroutine job, if any.
+        stop()
+
+        // You can also add logic here to release any other resources or listeners
+        // that your `SensorDataPushManager` might be using.
+        // ...
+
+        // Update the static tracking if you want to track cleanup:
+        instanceCount--
+        activeInstances.remove(this)
     }
 
     /**
@@ -107,7 +151,7 @@ class SensorDataPushManager(private val context: Context, private val sensorServ
         val db = FamilyDatabase.getInstance()
         Log.i("SensorDataPushManager", "Get database.")
 
-        Log.i("SensorDataPushManager", "familyid: $familyId, username: $username, temp: ${sensorService.temperatureValue}")
+        Log.i("SensorDataPushManager", "familyid: $familyId, username: $username, temp: ${sensorService.temperatureValue}, battery: ${sensorService.batteryValue}")
         // Push child temperature to database.
         if (sensorService.isTemperatureSensorAvailable
             && sensorService.temperatureValue != savedTemperature
