@@ -15,6 +15,7 @@ class PreferenceHelper(context: Context) {
         const val OBJECT_ID = "OBJECT_ID"
         const val ROLE = "ROLE"
         const val EMERGENCY_CONTACT = "EMERGENCY_CONTACT"
+        const val LAST_OBJECT_ID = "LAST_OBJECT_ID"
     }
 
     fun setFamilyID(familyID: String) {
@@ -74,6 +75,17 @@ class PreferenceHelper(context: Context) {
         val editor = prefs.edit()
         editor.clear()
         editor.apply()
+    }
+
+    // For LAST_OBJECT_ID
+    fun setLastObjectID(objectID: String) {
+        val editor = prefs.edit()
+        editor.putString(LAST_OBJECT_ID, objectID)
+        editor.apply()
+    }
+
+    fun getLastObjectID(): String? {
+        return prefs.getString(LAST_OBJECT_ID, null)
     }
 
 }

@@ -1,5 +1,6 @@
 package com.example.safecircle.ui.screen
 
+import android.content.Intent
 import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -24,6 +25,7 @@ import com.example.safecircle.database.Child
 import com.example.safecircle.database.FamilyDatabase
 import com.example.safecircle.database.Parent
 import com.example.safecircle.database.PersonalDetails
+import com.example.safecircle.sensors.ForegroundSensorService
 import com.example.safecircle.ui.components.AppDrawer
 import com.example.safecircle.ui.components.AppTopBar
 import com.example.safecircle.ui.theme.CyanSecondary
