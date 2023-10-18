@@ -31,18 +31,7 @@ fun MapMarkerOverlay(viewModel: MapViewModel, username: String?=null) {
             it.key == username
         }
     }
-    LaunchedEffect(viewModel.memberLocations) {
-        if (!dataLoaded) {
-            viewModel.fetchMemberLocationsAsync()
-            dataLoaded = true
-        }
-        Log.d("MapMarkerOverlay", "LaunchedEffect triggered");
 
-        val cameraUpdate = computeCameraUpdate(memberLocations.values)
-        if (cameraUpdate != null) {
-            cameraPositionState.animate(cameraUpdate, 500)
-        }
-    }
     Log.d("MapMarkerOverlay", "memberLocations = $memberLocations")
     memberLocations.entries
         .map {
@@ -70,18 +59,3 @@ private fun shortenUsername(username: String): String {
     return parts[0].first().uppercase()
 }
 
-private fun computeCameraUpdate(markers: Iterable<LatLng>): CameraUpdate? {
-    val markersList = markers.toList()
-    if (markersList.isEmpty()) {
-        return null
-    }
-    if (markersList.size == 1) {
-        return CameraUpdateFactory.newLatLngZoom(markersList[0], 15f)
-    }
-    val builder = LatLngBounds.builder()
-    markersList.forEach {
-        builder.include(it)
-    }
-    val bounds = builder.build()
-    return CameraUpdateFactory.newLatLngBounds(bounds, 500, 1000, 4)
-}
