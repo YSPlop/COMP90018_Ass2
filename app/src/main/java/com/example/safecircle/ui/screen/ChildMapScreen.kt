@@ -130,24 +130,24 @@ fun ChildMapScreen(navController: NavHostController) {
         }
     }
 
-    LaunchedEffect(Unit) {
-        // Start ForegroundSensorService
-        Log.i("Dashboard", "objectId: $objectID")
-        val lastObjectID = preferenceHelper.getLastObjectID()
-
-        if (!isServiceRunning(ForegroundSensorService::class.java)) {
-            // If service isn't running, start it
-            startForegroundService(context)
-        } else if (objectID != lastObjectID) {
-            // If service is running and objectId has changed, stop and then start it
-            val stopIntent = Intent(context, ForegroundSensorService::class.java)
-            context.stopService(stopIntent)
-            startForegroundService(context)
-        }
-
-        // Store the current objectId as lastObjectID
-        preferenceHelper.setLastObjectID(objectID.toString())
-    }
+//    LaunchedEffect(Unit) {
+//        // Start ForegroundSensorService
+//        Log.i("Dashboard", "objectId: $objectID")
+//        val lastObjectID = preferenceHelper.getLastObjectID()
+//
+//        if (!isServiceRunning(ForegroundSensorService::class.java)) {
+//            // If service isn't running, start it
+//            startForegroundService(context)
+//        } else if (objectID != lastObjectID) {
+//            // If service is running and objectId has changed, stop and then start it
+//            val stopIntent = Intent(context, ForegroundSensorService::class.java)
+//            context.stopService(stopIntent)
+//            startForegroundService(context)
+//        }
+//
+//        // Store the current objectId as lastObjectID
+//        preferenceHelper.setLastObjectID(objectID.toString())
+//    }
 
     // Function to check if the markers has changed
     fun hasMarkersChanged(): Boolean {
