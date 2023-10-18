@@ -49,6 +49,7 @@ import com.example.safecircle.ChildMap
 import com.example.safecircle.Login
 import com.example.safecircle.database.FamilyDatabase
 import com.example.safecircle.database.PersonalDetails
+import com.example.safecircle.sensors.ForegroundSensorService
 import com.example.safecircle.ui.theme.YellowPrimary
 import java.lang.Exception
 

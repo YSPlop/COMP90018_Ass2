@@ -22,6 +22,7 @@ class FamilyDatabase {
 
     private val database: FirebaseDatabase = FirebaseDatabase.getInstance()
     private val familiesReference: DatabaseReference = database.getReference("families")
+    private var childrenSensorListener: ValueEventListener? = null
 
     companion object {
         @Volatile
@@ -355,6 +356,36 @@ class FamilyDatabase {
             })
 
         Log.i("FamilyDatabase", "Set child battery: " + battery)
+    }
+
+    /**
+     * Listen to sensor value changes in all children.
+     * @param onValueChanged Callback that receives a child name, battery value, and temperature value.
+     */
+    fun observeChildSensorData(familyId: String, onValueChanged: (String, Float, Float) -> Unit){
+        val childrenRef = familiesReference.child(familyId).child("child")
+        removeChildSensorListener(familyId)
+        childrenSensorListener = childrenRef.addValueEventListener(object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                for (childSnapshot in snapshot.children) {
+                    val child = childSnapshot.getValue(Child::class.java)
+                    if (child != null) {
+                        val name: String =
+                            if (child.username != null) child.username!! else "Unknown"
+                        onValueChanged(name, child.battery, child.temperature)
+                    }
+                }
+            }
+            override fun onCancelled(databaseError: DatabaseError) {
+                Log.e("FamilyDatabase", "Error: $databaseError")
+            }
+        })
+    }
+
+    fun removeChildSensorListener(familyId: String){
+        if(childrenSensorListener == null) return
+        val childrenRef = familiesReference.child(familyId).child("child")
+        childrenRef.removeEventListener(childrenSensorListener!!)
     }
 
     fun pushMarkersToChild(familyId: String?, objectId: String?, markersMap: Map<Int, EnhancedMarkerState>) {

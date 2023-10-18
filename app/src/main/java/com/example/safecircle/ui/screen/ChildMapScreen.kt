@@ -2,8 +2,11 @@ package com.example.safecircle.ui.screen
 
 import android.Manifest
 import android.annotation.SuppressLint
+import android.app.ActivityManager
+import android.content.Context
+import android.content.Intent
+import android.os.Build
 import android.util.Log
-import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -31,10 +34,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
-import androidx.core.content.ContextCompat
 import androidx.navigation.NavHostController
 import com.example.safecircle.ChildSettings
-import com.example.safecircle.sensors.ForegroundSensorService
 import com.example.safecircle.utils.PreferenceHelper
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.rememberMultiplePermissionsState
@@ -57,12 +58,12 @@ import com.example.safecircle.database.FamilyDatabase
 import com.example.safecircle.database.FamilyLocationDao
 import com.example.safecircle.ui.components.map.MapMarkerOverlay
 import com.example.safecircle.viewmodel.MapViewModel
+import com.example.safecircle.sensors.ForegroundSensorService
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.maps.CameraUpdate
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.model.LatLngBounds
 import com.google.maps.android.compose.Circle
-import java.util.UUID
 import kotlin.math.atan2
 import kotlin.math.cos
 import kotlin.math.sin
@@ -95,6 +96,58 @@ fun ChildMapScreen(navController: NavHostController) {
     val selectedMarkerId = remember { mutableStateOf<Int?>(null) }
     val showDialog = remember { mutableStateOf(false) }
     val wasInsideCircle = remember { mutableStateOf(false) }
+
+    fun isServiceRunning(serviceClass: Class<*>): Boolean {
+        val manager = context.getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
+        for (service in manager.getRunningServices(Integer.MAX_VALUE)) {
+            if (serviceClass.name == service.service.className) {
+                return true
+            }
+        }
+        return false
+    }
+    // start all sensors
+//    LaunchedEffect(Unit) {
+//        Log.i("Dashboard", "objectId: $objectID")
+//        // Start ForegroundSensorService
+//        if (!isServiceRunning(ForegroundSensorService::class.java)) {
+////            ForegroundSensorService.getInstance()?.setUser(familyID.toString(), username.toString(), Role.PARENT)
+//            val serviceIntent = Intent(context, ForegroundSensorService::class.java)
+//            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+//                context.startForegroundService(serviceIntent)
+//            } else {
+//                context.startService(serviceIntent)
+//            }
+//        }
+//    }
+
+    fun startForegroundService(context: Context) {
+        val serviceIntent = Intent(context, ForegroundSensorService::class.java)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            context.startForegroundService(serviceIntent)
+        } else {
+            context.startService(serviceIntent)
+        }
+    }
+
+    LaunchedEffect(Unit) {
+        // Start ForegroundSensorService
+        Log.i("Dashboard", "objectId: $objectID")
+        val lastObjectID = preferenceHelper.getLastObjectID()
+
+        if (!isServiceRunning(ForegroundSensorService::class.java)) {
+            // If service isn't running, start it
+            startForegroundService(context)
+        } else if (objectID != lastObjectID) {
+            // If service is running and objectId has changed, stop and then start it
+            val stopIntent = Intent(context, ForegroundSensorService::class.java)
+            context.stopService(stopIntent)
+            startForegroundService(context)
+        }
+
+        // Store the current objectId as lastObjectID
+        preferenceHelper.setLastObjectID(objectID.toString())
+    }
 
     // Function to check if the markers has changed
     fun hasMarkersChanged(): Boolean {
