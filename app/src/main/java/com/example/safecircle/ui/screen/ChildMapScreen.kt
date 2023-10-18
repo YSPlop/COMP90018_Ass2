@@ -85,7 +85,7 @@ fun ChildMapScreen(navController: NavHostController) {
     val context = LocalContext.current
     val preferenceHelper = PreferenceHelper(context)
     val familyId = PreferenceHelper(context).getFamilyID();
-    var _familyLocationDao = FamilyLocationDao.getInstance(familyId!!)
+    var familyLocationDao = FamilyLocationDao.getInstance(familyId!!)
     val username = preferenceHelper.getUsername()
     val role = preferenceHelper.getRole()
     val emergencyContactNumber = preferenceHelper.getEmergencyContact()
@@ -142,7 +142,7 @@ fun ChildMapScreen(navController: NavHostController) {
             // Initialize marker status for the child
             familyId?.let { famId ->
                 username?.let { objId ->
-                    _familyLocationDao.getMarkersFromChild(famId, objId) {retrievedMarkers ->
+                    familyLocationDao.getMarkersFromChild(famId, objId) {retrievedMarkers ->
                         if(retrievedMarkers != null){
                             markers.value = retrievedMarkers
                             // Update the last marker state to current

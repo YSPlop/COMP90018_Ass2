@@ -2,6 +2,7 @@ package com.example.safecircle.ui.screen
 
 import android.util.Log
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -9,6 +10,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeContentPadding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
@@ -54,7 +56,7 @@ fun MapsScreen(navController: NavController, username: String? = null) {
     Log.d("MapScreen", "Received username = $username")
     val context = LocalContext.current;
     val familyId = PreferenceHelper(context).getFamilyID();
-    var _familyLocationDao = FamilyLocationDao.getInstance(familyId!!)
+    var familyLocationDao = FamilyLocationDao.getInstance(familyId!!)
     val markers = remember { mutableStateOf(mutableMapOf<Int, EnhancedMarkerState>()) }
     val lastKnownMarkers = remember { mutableStateOf(mutableMapOf<Int, EnhancedMarkerState>()) }
     val selectedMarkerId = remember { mutableStateOf<Int?>(null) }
@@ -111,7 +113,7 @@ fun MapsScreen(navController: NavController, username: String? = null) {
         // Initialize marker status for the child
         familyId?.let { famId ->
             username?.let { objId ->
-                _familyLocationDao.getMarkersFromChild(famId, objId) {retrievedMarkers ->
+                familyLocationDao.getMarkersFromChild(famId, objId) {retrievedMarkers ->
                     if(retrievedMarkers != null){
                         markers.value = retrievedMarkers
                         // Update the last marker state to current
@@ -156,7 +158,7 @@ fun MapsScreen(navController: NavController, username: String? = null) {
 
                 familyId?.let { famId ->
                     username?.let { objId ->
-                        _familyLocationDao.pushMarkersToChild(famId, objId, markers.value)
+                        familyLocationDao.pushMarkersToChild(famId, objId, markers.value)
                     }
                 }
                 // Update the last marker state to current
@@ -214,30 +216,43 @@ fun MapsScreen(navController: NavController, username: String? = null) {
                         .padding(8.dp)
                         .fillMaxWidth()
                 )
-
-                Slider(
-                    value = selectedRadius,
-                    onValueChange = { newValue ->
-                        val updatedMarker = selectedEnhancedMarker?.copy(
-                            properties = mutableStateOf(
-                                selectedEnhancedMarker.properties.value.copy(radius = newValue)
-                            )
-                        )
-                        if (updatedMarker != null && selectedMarkerId.value != null) {
-                            markers.value = markers.value.toMutableMap().apply {
-                                this[selectedMarkerId.value!!] = updatedMarker
-                            }
-                        }
-                    },
-                    valueRange = 30f..500f,
-                    modifier = Modifier.padding(all = 16.dp)
-                )
-                Text(text = "${(selectedEnhancedMarker?.properties?.value?.radius ?: 100f).toInt()} meters",)
-
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(top = 8.dp)
+                        .padding(top = 8.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ){
+                    Slider(
+                        value = selectedRadius,
+                        onValueChange = { newValue ->
+                            val updatedMarker = selectedEnhancedMarker?.copy(
+                                properties = mutableStateOf(
+                                    selectedEnhancedMarker.properties.value.copy(radius = newValue)
+                                )
+                            )
+                            if (updatedMarker != null && selectedMarkerId.value != null) {
+                                markers.value = markers.value.toMutableMap().apply {
+                                    this[selectedMarkerId.value!!] = updatedMarker
+                                }
+                            }
+                        },
+                        valueRange = 30f..500f,
+                        modifier = Modifier
+                            .padding(all = 16.dp)
+                            .width(240.dp)
+                    )
+                    Text(
+                        text = "${(selectedEnhancedMarker?.properties?.value?.radius ?: 100f).toInt()} meters",
+                        modifier = Modifier
+                            .padding(all = 8.dp)
+                            .align(Alignment.CenterVertically)
+                    )
+                }
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = 8.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween
                 ){
                     Button(
                         // Delete marker for this child
@@ -245,7 +260,7 @@ fun MapsScreen(navController: NavController, username: String? = null) {
                             markers.value.remove(selectedMarkerId.value)
                             familyId?.let { famId ->
                                 username?.let { objId ->
-                                    _familyLocationDao.pushMarkersToChild(famId, objId, markers.value)
+                                    familyLocationDao.pushMarkersToChild(famId, objId, markers.value)
                                 }
                             }
                             // Update the last marker state to current
@@ -263,7 +278,7 @@ fun MapsScreen(navController: NavController, username: String? = null) {
                         onClick = {
                             familyId?.let { famId ->
                                 username?.let { objId ->
-                                    _familyLocationDao.pushMarkersToChild(famId, objId, markers.value)
+                                    familyLocationDao.pushMarkersToChild(famId, objId, markers.value)
                                 }
                             }
                             // Update the last marker state to current
@@ -277,26 +292,26 @@ fun MapsScreen(navController: NavController, username: String? = null) {
             }
         }
     }
-    if (showDialog.value) {
-        androidx.compose.material.AlertDialog(
-            onDismissRequest = {
-                showDialog.value = false
-            },
-            title = {
-                Text(text = "Location Alert")
-            },
-            text = {
-                Text("Current location is inside the circle!")
-            },
-            confirmButton = {
-                Button(onClick = {
-                    showDialog.value = false
-                }) {
-                    Text("OK")
-                }
-            }
-        )
-    }
+//    if (showDialog.value) {
+//        androidx.compose.material.AlertDialog(
+//            onDismissRequest = {
+//                showDialog.value = false
+//            },
+//            title = {
+//                Text(text = "Location Alert")
+//            },
+//            text = {
+//                Text("Current location is inside the circle!")
+//            },
+//            confirmButton = {
+//                Button(onClick = {
+//                    showDialog.value = false
+//                }) {
+//                    Text("OK")
+//                }
+//            }
+//        )
+//    }
 }
 
 private fun computeCameraUpdate(markers: Iterable<LatLng>): CameraUpdate? {
