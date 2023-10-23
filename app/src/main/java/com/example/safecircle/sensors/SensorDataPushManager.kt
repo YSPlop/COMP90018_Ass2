@@ -63,6 +63,7 @@ class SensorDataPushManager(private val context: Context, private val sensorServ
     private var username: String? = preferenceHelper.getUsername()
     private var userRole: Role? = preferenceHelper.getRole()
     private var job: Job? = null
+    private val previousIsInsideStatus: MutableMap<String, String> = mutableMapOf()
 
 
     private var savedTemperature: Float = 256f;
@@ -71,6 +72,7 @@ class SensorDataPushManager(private val context: Context, private val sensorServ
     //notification time stamp
     private var lastBatteryNotificationTime: Long = 0
     private var lastTemperatureNotificationTime: Long = 0
+
 
     // Cooldown period (e.g., 15 minutes)
     private val NOTIFICATION_COOLDOWN = 15 * 60 * 1000
@@ -116,7 +118,9 @@ class SensorDataPushManager(private val context: Context, private val sensorServ
         }
         val db = FamilyDatabase.getInstance()
         db.getAllChildrenInfo(familyId!!) {children ->
-            GlobalState.childList = children
+//            GlobalState.childList.forEach{person ->
+//                previousIsInsideStatus[person.name] = person.isInside
+//            }
             // Logging each person's temperature and phoneBattery
             children.forEach { person ->
                 Log.i("SensorDataPushManager", "Name: ${person.name}, Temperature: ${person.temperature}, Battery: ${person.phoneBattery}")
@@ -124,13 +128,23 @@ class SensorDataPushManager(private val context: Context, private val sensorServ
                     sendBatteryLowNotification(person.name)
                     lastBatteryNotificationTime = System.currentTimeMillis()
                 }
-
                 if (person.temperature.toFloat() >= 40.0 && canSendTemperatureNotification()) {
                     sendTemperatureHighNotification(person.name)
                     lastTemperatureNotificationTime = System.currentTimeMillis()
                 }
-
+                val previousStatus = previousIsInsideStatus[person.name]
+                if(person.markerName != previousStatus) {
+                    if (person.markerName != "Unknown") {
+                        sendInsideNotification(person.name, person.markerName)
+                    }
+                    else {
+                        sendOutsideNotification(person.name)
+                    }
+                    // Update the map with the current status
+                    previousIsInsideStatus[person.name] = person.markerName
+                }
             }
+            GlobalState.childList = children
         }
     }
 
@@ -204,5 +218,25 @@ class SensorDataPushManager(private val context: Context, private val sensorServ
         notificationManager.notify(4, notification)
     }
 
+    private fun sendInsideNotification(name: String, markerName: String?) {
+        val notification = NotificationCompat.Builder(context, "SensorChannel")
+            .setContentTitle("Location Status")
+            .setContentText("$name is inside Circle: $markerName")
+            .setSmallIcon(R.drawable.family) // replace with your icon
+            .build()
 
+        val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+        notificationManager.notify(5, notification)
+    }
+
+    private fun sendOutsideNotification(name: String) {
+        val notification = NotificationCompat.Builder(context, "SensorChannel")
+            .setContentTitle("Location Status")
+            .setContentText("$name is outside of circles")
+            .setSmallIcon(R.drawable.family) // replace with your icon
+            .build()
+
+        val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+        notificationManager.notify(5, notification)
+    }
 }

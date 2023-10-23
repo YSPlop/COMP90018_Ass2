@@ -92,7 +92,7 @@ class FamilyLocationDao private constructor (
         val childRef = locationCollection.child(familyId).child(memberId)
         // Convert your markers map to a list suitable for firebase
         val markersList = markersMap.map {
-            FamilyDatabase.FirebaseMarker(
+            FirebaseMarker(
                 id = it.key,
                 lat = it.value.markerState.position.latitude,
                 lng = it.value.markerState.position.longitude,
@@ -125,7 +125,7 @@ class FamilyLocationDao private constructor (
         childRef.child("markers").get().addOnSuccessListener { dataSnapshot ->
             val markersMap = mutableMapOf<Int, EnhancedMarkerState>()
             dataSnapshot.children.forEach { childSnapshot ->
-                val firebaseMarker = childSnapshot.getValue(FamilyDatabase.FirebaseMarker::class.java)
+                val firebaseMarker = childSnapshot.getValue(FirebaseMarker::class.java)
                 if (firebaseMarker != null) {
                     val markerState = MarkerState(position= LatLng(firebaseMarker.lat, firebaseMarker.lng))
                     val properties = MarkerProperties(firebaseMarker.radius, firebaseMarker.name)
@@ -139,5 +139,20 @@ class FamilyLocationDao private constructor (
                 callback(null)
             }
     }
-
+    data class FirebaseMarker(
+        val id: Int,
+        val lat: Double,
+        val lng: Double,
+        val radius: Float,
+        val name: String
+    ){
+        // This constructor is for Firebase
+        constructor() : this(
+            id = 0,
+            lat = 0.0,
+            lng = 0.0,
+            radius = 0f,
+            name = ""
+        )
+    }
 }

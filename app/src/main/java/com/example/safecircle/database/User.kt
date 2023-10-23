@@ -20,7 +20,8 @@ data class Child(
     var code: String? = null,
     var locationId: String? = null,
     var temperature: Float = 0f,
-    var battery: Float = 100f
+    var battery: Float = 100f,
+    var markerName: String? = null
 ) : User()
 
 data class Family(

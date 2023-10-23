@@ -1,22 +1,12 @@
 package com.example.safecircle.database
 
-import android.icu.text.Transliterator
 import android.util.Log
-import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.mutableStateOf
-import com.example.safecircle.sensors.ForegroundSensorService
-import com.example.safecircle.ui.screen.EnhancedMarkerState
-import com.example.safecircle.ui.screen.MarkerProperties
 import com.example.safecircle.ui.screen.PersonInfo
-import com.google.android.gms.maps.model.LatLng
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
-import com.google.firebase.database.ktx.snapshots
-import com.google.maps.android.compose.MarkerState
-import java.util.UUID
 
 class FamilyDatabase {
 
@@ -249,12 +239,18 @@ class FamilyDatabase {
                     if (child != null) {
                         val name: String =
                             if (child.username != null) child.username!! else "Unknown"
+//                        val isInside: String =
+//                            if (child.isInside != null) child.isInside!! else "Unknown"
+                        val markerName: String =
+                            if (child.markerName != null) child.markerName!! else "Unknown"
                         childrenList.add(
                             PersonInfo(
                                 name,
                                 "placeholder location",
                                 child.temperature.toString(),
-                                child.battery.toString()
+                                child.battery.toString(),
+//                                isInside,
+                                markerName
                             )
                         )
                     }
@@ -308,6 +304,8 @@ class FamilyDatabase {
         })
     }
 
+
+
     /**
      * Sets the value of the temperature field for a child in a family.
      */
@@ -358,6 +356,29 @@ class FamilyDatabase {
         Log.i("FamilyDatabase", "Set child battery: " + battery)
     }
 
+    fun setChildStatus(familyId: String?, username: String?, markerName: String?) {
+        if (familyId == null || username == null) return
+
+        val childrenRef = familiesReference.child(familyId).child("child")
+        childrenRef.orderByChild("username").equalTo(username)
+            .addListenerForSingleValueEvent(object : ValueEventListener {
+                override fun onDataChange(snapshot: DataSnapshot) {
+                    if (snapshot.exists()) {
+                        for (s in snapshot.children) {
+//                            s.ref.child("isInside").setValue(isInside)
+                            s.ref.child("markerName").setValue(markerName)
+                        }
+                    }
+                }
+
+                override fun onCancelled(databaseError: DatabaseError) {
+                    Log.e("FamilyDatabase", "Error: $databaseError")
+                }
+            })
+
+//        Log.i("FamilyDatabase", "Set child isInside: " + isInside)
+    }
+
     /**
      * Listen to sensor value changes in all children.
      * @param onValueChanged Callback that receives a child name, battery value, and temperature value.
@@ -388,80 +409,8 @@ class FamilyDatabase {
         childrenRef.removeEventListener(childrenSensorListener!!)
     }
 
-    fun pushMarkersToChild(familyId: String?, objectId: String?, markersMap: Map<Int, EnhancedMarkerState>) {
-        if (familyId == null || objectId == null) return
-        val childRef = familiesReference.child(familyId).child("child").child(objectId)
-        // Convert your markers map to a list suitable for firebase
-        val markersList = markersMap.map {
-            FirebaseMarker(
-                id = it.key,
-                lat = it.value.markerState.position.latitude,
-                lng = it.value.markerState.position.longitude,
-                radius = it.value.properties.value.radius,
-                name = it.value.properties.value.name
-            )
-        }
-
-        childRef.child("markers").setValue(markersList)
-            .addOnSuccessListener {
-                Log.i("FamilyDatabase", "Successfully set markers group for family ID: $familyId")
-            }
-            .addOnFailureListener { exception ->
-                Log.e("FamilyDatabase", "Error: $exception")
-            }
-    }
-
-    fun getMarkersFromChild(
-        familyId: String?,
-        objectId: String?,
-        callback: (MutableMap<Int, EnhancedMarkerState>?) -> Unit
-    ){
-        if (familyId == null || objectId == null) {
-            callback(null)
-            return
-        }
-
-        val childRef = familiesReference.child(familyId).child("child").child(objectId)
-
-        childRef.child("markers").get().addOnSuccessListener { dataSnapshot ->
-            val markersMap = mutableMapOf<Int, EnhancedMarkerState>()
-            dataSnapshot.children.forEach { childSnapshot ->
-                val firebaseMarker = childSnapshot.getValue(FirebaseMarker::class.java)
-                if (firebaseMarker != null) {
-                    val markerState = MarkerState(position= LatLng(firebaseMarker.lat, firebaseMarker.lng))
-                    val properties = MarkerProperties(firebaseMarker.radius, firebaseMarker.name)
-                    markersMap[firebaseMarker.id] = EnhancedMarkerState(markerState, mutableStateOf(properties))
-                }
-            }
-            callback(markersMap)
-        }
-            .addOnFailureListener { exception ->
-                Log.e("FamilyDatabase", "Error: $exception")
-                callback(null)
-            }
-    }
-
-    data class FirebaseMarker(
-        val id: Int,
-        val lat: Double,
-        val lng: Double,
-        val radius: Float,
-        val name: String
-    ){
-        // This constructor is for Firebase
-        constructor() : this(
-            id = 0,
-            lat = 0.0,
-            lng = 0.0,
-            radius = 0f,
-            name = ""
-        )
-    }
-//    data class FirebaseMarker(
-//        val id: UUID = UUID.randomUUID(),
-//        val lat: Double = 0.0,
-//        val lng: Double = 0.0,
-//        val radius: Float = 0f,
-//        val name: String = ""
-//    )
+    data class ChildStatus(
+        val isInside: Boolean,
+        val message: String
+    )
 }

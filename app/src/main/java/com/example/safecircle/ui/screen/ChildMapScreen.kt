@@ -64,6 +64,8 @@ import com.google.android.gms.maps.CameraUpdate
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.model.LatLngBounds
 import com.google.maps.android.compose.Circle
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import kotlin.math.atan2
 import kotlin.math.cos
 import kotlin.math.sin
@@ -85,14 +87,14 @@ data class EnhancedMarkerState(
 fun ChildMapScreen(navController: NavHostController) {
     val context = LocalContext.current
     val preferenceHelper = PreferenceHelper(context)
-    val familyId = PreferenceHelper(context).getFamilyID();
+    val familyId = PreferenceHelper(context).getFamilyID()
     var familyLocationDao = FamilyLocationDao.getInstance(familyId!!)
     val username = preferenceHelper.getUsername()
     val role = preferenceHelper.getRole()
     val emergencyContactNumber = preferenceHelper.getEmergencyContact()
+    val objectID = preferenceHelper.getObjectId()
     val childLocation = remember { mutableStateOf<LatLng?>(null) }
     val markers = remember { mutableStateOf(mutableMapOf<Int, EnhancedMarkerState>()) }
-    val lastKnownMarkers = remember { mutableStateOf(mutableMapOf<Int, EnhancedMarkerState>()) }
     val selectedMarkerId = remember { mutableStateOf<Int?>(null) }
     val showDialog = remember { mutableStateOf(false) }
     val wasInsideCircle = remember { mutableStateOf(false) }
@@ -106,62 +108,20 @@ fun ChildMapScreen(navController: NavHostController) {
         }
         return false
     }
+
     // start all sensors
-//    LaunchedEffect(Unit) {
-//        Log.i("Dashboard", "objectId: $objectID")
-//        // Start ForegroundSensorService
-//        if (!isServiceRunning(ForegroundSensorService::class.java)) {
-////            ForegroundSensorService.getInstance()?.setUser(familyID.toString(), username.toString(), Role.PARENT)
-//            val serviceIntent = Intent(context, ForegroundSensorService::class.java)
-//            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-//                context.startForegroundService(serviceIntent)
-//            } else {
-//                context.startService(serviceIntent)
-//            }
-//        }
-//    }
-
-    fun startForegroundService(context: Context) {
-        val serviceIntent = Intent(context, ForegroundSensorService::class.java)
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            context.startForegroundService(serviceIntent)
-        } else {
-            context.startService(serviceIntent)
+    LaunchedEffect(Unit) {
+        Log.i("Dashboard", "objectId: $objectID")
+        // Start ForegroundSensorService
+        if (!isServiceRunning(ForegroundSensorService::class.java)) {
+//            ForegroundSensorService.getInstance()?.setUser(familyID.toString(), username.toString(), Role.PARENT)
+            val serviceIntent = Intent(context, ForegroundSensorService::class.java)
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                context.startForegroundService(serviceIntent)
+            } else {
+                context.startService(serviceIntent)
+            }
         }
-    }
-
-//    LaunchedEffect(Unit) {
-//        // Start ForegroundSensorService
-//        Log.i("Dashboard", "objectId: $objectID")
-//        val lastObjectID = preferenceHelper.getLastObjectID()
-//
-//        if (!isServiceRunning(ForegroundSensorService::class.java)) {
-//            // If service isn't running, start it
-//            startForegroundService(context)
-//        } else if (objectID != lastObjectID) {
-//            // If service is running and objectId has changed, stop and then start it
-//            val stopIntent = Intent(context, ForegroundSensorService::class.java)
-//            context.stopService(stopIntent)
-//            startForegroundService(context)
-//        }
-//
-//        // Store the current objectId as lastObjectID
-//        preferenceHelper.setLastObjectID(objectID.toString())
-//    }
-
-    // Function to check if the markers has changed
-    fun hasMarkersChanged(): Boolean {
-        return markers.value != lastKnownMarkers.value
-    }
-
-    // Update the last-known marker value
-    fun updateLastKnownMarkers() {
-        lastKnownMarkers.value = markers.value.toMutableMap()
-    }
-
-    // Call this function after you have checked, to update the last-known value
-    fun restoreMarkers() {
-        markers.value = lastKnownMarkers.value.toMutableMap()
     }
 
     val viewModel = viewModel<MapViewModel>(
@@ -196,10 +156,8 @@ fun ChildMapScreen(navController: NavHostController) {
             familyId?.let { famId ->
                 username?.let { objId ->
                     familyLocationDao.getMarkersFromChild(famId, objId) {retrievedMarkers ->
-                        if(retrievedMarkers != null){
+                        if (retrievedMarkers != null) {
                             markers.value = retrievedMarkers
-                            // Update the last marker state to current
-                            updateLastKnownMarkers()
                         }
                     }
                 }
@@ -236,9 +194,6 @@ fun ChildMapScreen(navController: NavHostController) {
                 // Deselect the marker when the map is clicked
                 onMapClick = { _ ->
                     selectedMarkerId.value = null
-                    if(hasMarkersChanged()){
-                        restoreMarkers()
-                    }
                 },
             ) {
                 markers.value.forEach { entry ->
