@@ -3,11 +3,8 @@ package com.example.safecircle.ui.screen
 import android.app.ActivityManager
 import android.content.Context
 import android.content.Intent
-import android.content.pm.PackageManager
 import android.os.Build
 import android.util.Log
-import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -26,15 +23,11 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.sp
-import androidx.core.content.ContextCompat
 import com.example.safecircle.Map
 import com.example.safecircle.database.FamilyDatabase
 import com.example.safecircle.sensors.ForegroundSensorService
@@ -44,16 +37,15 @@ import com.example.safecircle.ui.theme.CyanSecondary
 import com.example.safecircle.ui.theme.YellowPrimary
 import com.example.safecircle.utils.GlobalState
 import com.example.safecircle.utils.PreferenceHelper
-import androidx.compose.runtime.collectAsState
-
-
 
 
 data class PersonInfo(
     val name: String,
     val location: String,
     val temperature: String,
-    val phoneBattery: String
+    val phoneBattery: String,
+    val isInside: String?,
+    val markerName: String?
 )
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

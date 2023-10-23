@@ -6,24 +6,30 @@ import android.content.Intent;
 import android.os.IBinder;
 import android.util.Log
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableDoubleStateOf
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.core.app.NotificationCompat
 import com.example.safecircle.R
+import com.example.safecircle.database.FamilyDatabase
 import com.example.safecircle.database.FamilyLocationDao
 import com.example.safecircle.database.Role
 import com.example.safecircle.interfaces.LocationClient
+import com.example.safecircle.ui.screen.EnhancedMarkerState
 import com.example.safecircle.utils.DefaultLocationClient
 import com.example.safecircle.utils.PreferenceHelper
 import com.google.android.gms.location.LocationServices
+import com.google.android.gms.maps.model.LatLng
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
+import kotlin.math.atan2
+import kotlin.math.cos
+import kotlin.math.sin
+import kotlin.math.sqrt
 import kotlin.time.DurationUnit
 import kotlin.time.toDuration
 
@@ -58,9 +64,11 @@ class ForegroundSensorService: Service()  {
     private val serviceScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
     private lateinit var familyId: String
     private lateinit var memberId: String
+    private lateinit var role: Role
     private lateinit var locationDao: FamilyLocationDao
+    private lateinit var familyDatabase: FamilyDatabase
     private lateinit var locationClient: LocationClient
-
+    private val markers = mutableStateOf(mutableMapOf<Int, EnhancedMarkerState>())
 
     companion object{
         @Volatile
@@ -109,19 +117,88 @@ class ForegroundSensorService: Service()  {
         val preferenceHelper = PreferenceHelper(this)
         familyId = preferenceHelper.getFamilyID().toString()
         memberId = preferenceHelper.getUsername().toString()
+        role = preferenceHelper.getRole()!!
+
         locationDao = FamilyLocationDao.getInstance(familyId)
+        familyDatabase = FamilyDatabase()
 
-        locationClient.getLocationUpdates(10.toDuration(DurationUnit.SECONDS))
-            .catch { e ->
-                Log.e("Location Service", e.toString())
-            }
-            .onEach {
-                Log.d("Location Service", "lat = ${it.latitude}, lng = ${it.longitude}")
-                locationDao.updateCurrentMemberLocation(memberId, it.latitude, it.longitude)
-            }
-            .launchIn(serviceScope)
+        if(role == Role.CHILD) {
+            locationClient.getLocationUpdates(10.toDuration(DurationUnit.SECONDS))
+                .catch { e ->
+                    Log.e("Location Service", e.toString())
+                }
+                .onEach {
+                    Log.d("Location Service", "lat = ${it.latitude}, lng = ${it.longitude}")
+                    locationDao.updateCurrentMemberLocation(memberId, it.latitude, it.longitude)
+                    locationDao.getMarkersFromChild(familyId, memberId) { retrievedMarkers ->
+                        var isInside = false
+                        var markerName = ""
+                        if (retrievedMarkers != null) {
+                            markers.value = retrievedMarkers
 
+                            // Check if the current location is inside any marker circle
+                            for (enhancedMarker in markers.value.values) {
+                                val markerLocation = enhancedMarker.markerState.position
+                                val radius = enhancedMarker.properties.value.radius
+                                if (isLocationInsideCircle(
+                                        LatLng(it.latitude, it.longitude),
+                                        markerLocation,
+                                        radius
+                                    )
+                                ) {
+                                    // The location is inside this marker's circle
+                                    Log.d(
+                                        "Location Service",
+                                        "Inside marker circle: ${enhancedMarker.properties.value.name}"
+                                    )
+                                    isInside = true
+                                    markerName = enhancedMarker.properties.value.name
+                                }
+                            }
+                        }
+
+                        if(isInside){
+                            familyDatabase.setChildStatus(
+                                familyId,
+                                memberId,
+                                "true",
+                                markerName
+                            )
+                        }else{
+                            familyDatabase.setChildStatus(
+                                familyId,
+                                memberId,
+                                null,
+                                null
+                            )
+                        }
+                    }
+                }
+                .launchIn(serviceScope)
+        }
         return START_NOT_STICKY
+    }
+
+    private fun sendInsideCircleNotification(circleName: String) {
+        val notification = NotificationCompat.Builder(this, "SensorChannel")
+            .setContentTitle("Inside Circle Alert")
+            .setContentText("$memberId currently inside the circle: $circleName")
+            .setSmallIcon(R.drawable.family) // replace with your icon
+            .build()
+
+        val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+        notificationManager.notify(4, notification) // Use a unique ID, e.g., 4
+    }
+
+    private fun sendOutsideCircleNotification() {
+        val notification = NotificationCompat.Builder(this, "SensorChannel")
+            .setContentTitle("Outside Circle Alert")
+            .setContentText("$memberId currently outside the circles")
+            .setSmallIcon(R.drawable.family) // replace with your icon
+            .build()
+
+        val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+        notificationManager.notify(4, notification) // Use a unique ID, e.g., 4
     }
 
 //    fun startNoiseSensor() {
@@ -163,5 +240,21 @@ class ForegroundSensorService: Service()  {
         sensorDataPushManager?.cleanup()
         sensorDataPushManager = null
         Log.i("test", "Foreground service Stopped")
+    }
+
+    private fun isLocationInsideCircle(location: LatLng, circleCenter: LatLng, radius: Float): Boolean {
+        val earthRadius = 6371e3 // Earth's radius in meters
+
+        val dLat = Math.toRadians(circleCenter.latitude - location.latitude)
+        val dLon = Math.toRadians(circleCenter.longitude - location.longitude)
+
+        val a = sin(dLat / 2) * sin(dLat / 2) +
+                cos(Math.toRadians(location.latitude)) * cos(Math.toRadians(circleCenter.latitude)) *
+                sin(dLon / 2) * sin(dLon / 2)
+        val c = 2 * atan2(sqrt(a), sqrt(1 - a))
+
+        val distance = earthRadius * c // Distance in meters
+
+        return distance <= radius
     }
 }
