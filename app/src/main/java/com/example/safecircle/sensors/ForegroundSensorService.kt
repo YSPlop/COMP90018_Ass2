@@ -161,14 +161,12 @@ class ForegroundSensorService: Service()  {
                             familyDatabase.setChildStatus(
                                 familyId,
                                 memberId,
-                                "true",
                                 markerName
                             )
                         }else{
                             familyDatabase.setChildStatus(
                                 familyId,
                                 memberId,
-                                null,
                                 null
                             )
                         }

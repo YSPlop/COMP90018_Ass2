@@ -21,7 +21,6 @@ data class Child(
     var locationId: String? = null,
     var temperature: Float = 0f,
     var battery: Float = 100f,
-    var isInside: String? = null,
     var markerName: String? = null
 ) : User()
 

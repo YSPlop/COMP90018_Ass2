@@ -132,17 +132,17 @@ class SensorDataPushManager(private val context: Context, private val sensorServ
                     sendTemperatureHighNotification(person.name)
                     lastTemperatureNotificationTime = System.currentTimeMillis()
                 }
-//                val previousStatus = previousIsInsideStatus[person.name]
-//                if(person.isInside != previousStatus) {
-                    if (person.isInside == "true") {
+                val previousStatus = previousIsInsideStatus[person.name]
+                if(person.markerName != previousStatus) {
+                    if (person.markerName != "Unknown") {
                         sendInsideNotification(person.name, person.markerName)
                     }
                     else {
                         sendOutsideNotification(person.name)
                     }
-//                    // Update the map with the current status
-//                    previousIsInsideStatus[person.name] = person.isInside
-//                }
+                    // Update the map with the current status
+                    previousIsInsideStatus[person.name] = person.markerName
+                }
             }
             GlobalState.childList = children
         }

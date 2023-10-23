@@ -44,8 +44,7 @@ data class PersonInfo(
     val location: String,
     val temperature: String,
     val phoneBattery: String,
-    val isInside: String?,
-    val markerName: String?
+    val markerName: String
 )
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

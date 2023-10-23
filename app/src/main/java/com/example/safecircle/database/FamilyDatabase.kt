@@ -239,14 +239,18 @@ class FamilyDatabase {
                     if (child != null) {
                         val name: String =
                             if (child.username != null) child.username!! else "Unknown"
+//                        val isInside: String =
+//                            if (child.isInside != null) child.isInside!! else "Unknown"
+                        val markerName: String =
+                            if (child.markerName != null) child.markerName!! else "Unknown"
                         childrenList.add(
                             PersonInfo(
                                 name,
                                 "placeholder location",
                                 child.temperature.toString(),
                                 child.battery.toString(),
-                                child.isInside,
-                                child.markerName
+//                                isInside,
+                                markerName
                             )
                         )
                     }
@@ -352,7 +356,7 @@ class FamilyDatabase {
         Log.i("FamilyDatabase", "Set child battery: " + battery)
     }
 
-    fun setChildStatus(familyId: String?, username: String?, isInside: String?, markerName: String?) {
+    fun setChildStatus(familyId: String?, username: String?, markerName: String?) {
         if (familyId == null || username == null) return
 
         val childrenRef = familiesReference.child(familyId).child("child")
@@ -361,7 +365,7 @@ class FamilyDatabase {
                 override fun onDataChange(snapshot: DataSnapshot) {
                     if (snapshot.exists()) {
                         for (s in snapshot.children) {
-                            s.ref.child("isInside").setValue(isInside)
+//                            s.ref.child("isInside").setValue(isInside)
                             s.ref.child("markerName").setValue(markerName)
                         }
                     }
@@ -372,7 +376,7 @@ class FamilyDatabase {
                 }
             })
 
-        Log.i("FamilyDatabase", "Set child isInside: " + isInside)
+//        Log.i("FamilyDatabase", "Set child isInside: " + isInside)
     }
 
     /**
