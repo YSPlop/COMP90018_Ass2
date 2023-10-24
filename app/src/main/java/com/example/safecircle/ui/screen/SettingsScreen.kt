@@ -29,6 +29,7 @@ import com.example.safecircle.sensors.ForegroundSensorService
 import com.example.safecircle.ui.components.AppDrawer
 import com.example.safecircle.ui.components.AppTopBar
 import com.example.safecircle.ui.theme.CyanSecondary
+import com.example.safecircle.ui.theme.PlaypenSansBold
 import com.example.safecircle.ui.theme.YellowPrimary
 import com.example.safecircle.utils.PreferenceHelper
 @Composable
@@ -88,7 +89,7 @@ fun SettingsScreen(navController: NavHostController) {
                     Column(
                         modifier = Modifier.padding(16.dp)
                     ) {
-                        Text(text = "Personal Details", fontWeight = FontWeight.Bold, fontSize = 18.sp)
+                        Text(text = "Personal Details", fontWeight = FontWeight.Bold, fontSize = 18.sp, fontFamily = PlaypenSansBold)
                         Spacer(modifier = Modifier.height(8.dp))
 
                         OutlinedTextField(
@@ -142,7 +143,7 @@ fun SettingsScreen(navController: NavHostController) {
                                 contentColor = Color.White
                             )
                         ) {
-                            Text(text = "Save Details")
+                            Text(text = "Save Details", fontFamily = PlaypenSansBold)
                         }
                     }
                 }
@@ -164,12 +165,17 @@ fun SettingsScreen(navController: NavHostController) {
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.Start
                     ) {
-                        Text(text = "Account Creation", fontWeight = FontWeight.Bold, fontSize = 18.sp)
+                        Text(
+                            text = if (isParentAccount.value) "Parent Account Creation" else "Child Account Creation",
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 18.sp,
+                            fontFamily = PlaypenSansBold
+                        )
                     }
                         Spacer(modifier = Modifier.height(16.dp))
                     Row(
                         modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
+                        horizontalArrangement = Arrangement.SpaceEvenly,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Button(
@@ -180,7 +186,7 @@ fun SettingsScreen(navController: NavHostController) {
                                 contentColor = Color.White
                             )
                         ) {
-                            Text(text = "Parent")
+                            Text(text = "Parent", fontFamily = PlaypenSansBold)
                         }
 
                         Button(
@@ -191,7 +197,7 @@ fun SettingsScreen(navController: NavHostController) {
                                 contentColor = Color.White
                             )
                         ) {
-                            Text(text = "Child")
+                            Text(text = "Child", fontFamily = PlaypenSansBold)
                         }
                     }
 
@@ -247,7 +253,7 @@ fun SettingsScreen(navController: NavHostController) {
                             )
                         )
                         {
-                            Text(text = "Create Account")
+                            Text(text = "Create Account", fontFamily = PlaypenSansBold)
                         }
 
                     } else {
@@ -301,7 +307,7 @@ fun SettingsScreen(navController: NavHostController) {
                     ),
                     modifier = Modifier.width(240.dp)
                 ) {
-                    Text(text = "Log out")
+                    Text(text = "Log out", fontFamily = PlaypenSansBold)
                 }
             }
         }

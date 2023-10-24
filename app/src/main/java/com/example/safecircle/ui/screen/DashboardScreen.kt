@@ -26,14 +26,19 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.font.Font
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.sp
 import com.example.safecircle.Map
+import com.example.safecircle.R
 import com.example.safecircle.database.FamilyDatabase
 import com.example.safecircle.sensors.ForegroundSensorService
 import com.example.safecircle.ui.components.AppDrawer
 import com.example.safecircle.ui.components.AppTopBar
 import com.example.safecircle.ui.theme.CyanSecondary
+import com.example.safecircle.ui.theme.DarkGreen
+import com.example.safecircle.ui.theme.PlaypenSansBold
 import com.example.safecircle.ui.theme.YellowPrimary
 import com.example.safecircle.utils.GlobalState
 import com.example.safecircle.utils.PreferenceHelper
@@ -46,6 +51,9 @@ data class PersonInfo(
     val phoneBattery: String,
     val markerName: String
 )
+
+
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DashboardScreen(navController: NavHostController) {
@@ -219,7 +227,8 @@ fun PersonCard(person: PersonInfo, navController: NavHostController) {
             Text(
                 text = "Show Map",
                 color = Color.Black,
-                fontSize = 13.sp
+                fontSize = 13.sp,
+                fontFamily = PlaypenSansBold
             )
         }
     }
@@ -231,7 +240,8 @@ fun InformationInPersonCard(person:PersonInfo){
     Text(
         text = person.name,
         fontWeight = FontWeight.Bold,
-        fontSize = 19.sp,
+        fontSize = 22.sp,
+        fontFamily = PlaypenSansBold
 
     )
     // If you would like to left align the below to the center then put the below in a column
@@ -247,7 +257,7 @@ fun InformationInPersonCard(person:PersonInfo){
             val temperatureStyle = if (person.temperature.toFloat() >= 40.0) {
                 SpanStyle(fontWeight = FontWeight.Bold, color = Color.Red)
             } else {
-                SpanStyle()
+                SpanStyle(fontWeight = FontWeight.Bold, color = DarkGreen)
             }
 
             Text(
@@ -255,6 +265,7 @@ fun InformationInPersonCard(person:PersonInfo){
                     withStyle(
                         style = SpanStyle(
                             fontWeight = FontWeight.Bold,
+                            fontFamily = PlaypenSansBold
                         )
                     ) {
                         append("Temperature: ")
@@ -279,7 +290,7 @@ fun InformationInPersonCard(person:PersonInfo){
             val batteryStyle = if (person.phoneBattery.toFloat() < 20.0) {
                 SpanStyle(fontWeight = FontWeight.Bold, color = Color.Red)
             } else {
-                SpanStyle()
+                SpanStyle(fontWeight = FontWeight.Bold, color = DarkGreen)
             }
 
             Text(
@@ -287,6 +298,7 @@ fun InformationInPersonCard(person:PersonInfo){
                     withStyle(
                         style = SpanStyle(
                             fontWeight = FontWeight.Bold,
+                            fontFamily = PlaypenSansBold
                         )
                     ) {
                         append("Phone Battery: ")

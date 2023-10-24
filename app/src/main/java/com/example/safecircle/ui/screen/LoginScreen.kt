@@ -42,6 +42,8 @@ import com.example.safecircle.Dashboard
 import com.example.safecircle.database.FamilyDatabase
 import com.example.safecircle.Register
 import com.example.safecircle.ui.theme.CyanSecondary
+import com.example.safecircle.ui.theme.PlaypenSans
+import com.example.safecircle.ui.theme.PlaypenSansBold
 import com.example.safecircle.ui.theme.YellowPrimary
 import com.example.safecircle.viewmodel.LoginViewModel
 
@@ -86,14 +88,14 @@ fun LoginScreen(navController: NavHostController, viewModel: LoginViewModel) {
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Text(text = "Parent", fontSize = 20.sp) // Increased font size for consistency
+                    Text(text = "Parent", fontSize = 20.sp, fontWeight = FontWeight.Bold, color = CyanSecondary, fontFamily = PlaypenSansBold) // Increased font size for consistency
                     RadioButton(
                         selected = loginType == "parent",
                         onClick = { loginType = "parent" },
                         modifier = Modifier.size(32.dp) // Setting a specific size for the radio button
                     )
-                    Spacer(modifier = Modifier.width(32.dp))
-                    Text(text = "Kid", fontSize = 20.sp) // Increased font size for consistency
+                    Spacer(modifier = Modifier.width(24.dp))
+                    Text(text = "Kid", fontSize = 20.sp, fontWeight = FontWeight.Bold, color = CyanSecondary, fontFamily = PlaypenSansBold) // Increased font size for consistency
                     RadioButton(
                         selected = loginType == "kid",
                         onClick = { loginType = "kid" },
@@ -106,7 +108,7 @@ fun LoginScreen(navController: NavHostController, viewModel: LoginViewModel) {
                         modifier = Modifier.padding(16.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Text(text = "Family ID:", fontWeight = FontWeight.Bold)
+                        Text(text = "Family ID:", fontWeight = FontWeight.Bold, fontFamily = PlaypenSansBold)
                         Spacer(modifier = Modifier.width(8.dp))
                         OutlinedTextField(
                             value = familyID,
@@ -122,7 +124,7 @@ fun LoginScreen(navController: NavHostController, viewModel: LoginViewModel) {
                         modifier = Modifier.padding(16.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Text(text = "Username:", fontWeight = FontWeight.Bold)
+                        Text(text = "Username:", fontWeight = FontWeight.Bold, fontFamily = PlaypenSansBold)
                         Spacer(modifier = Modifier.width(8.dp))
                         OutlinedTextField(
                             value = username,
@@ -139,7 +141,7 @@ fun LoginScreen(navController: NavHostController, viewModel: LoginViewModel) {
                         modifier = Modifier.padding(16.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Text(text = "Password:", fontWeight = FontWeight.Bold)
+                        Text(text = "Password:", fontWeight = FontWeight.Bold, fontFamily = PlaypenSansBold)
                         Spacer(modifier = Modifier.width(8.dp))
                         OutlinedTextField(
                             value = password,
@@ -157,7 +159,7 @@ fun LoginScreen(navController: NavHostController, viewModel: LoginViewModel) {
                         modifier = Modifier.padding(16.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Text(text = "Family ID:", fontWeight = FontWeight.Bold)
+                        Text(text = "Family ID:", fontWeight = FontWeight.Bold, fontFamily = PlaypenSansBold)
                         Spacer(modifier = Modifier.width(8.dp))
                         OutlinedTextField(
                             value = familyID,
@@ -174,7 +176,7 @@ fun LoginScreen(navController: NavHostController, viewModel: LoginViewModel) {
                         modifier = Modifier.padding(16.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Text(text = "    Code:   ", fontWeight = FontWeight.Bold)
+                        Text(text = "    Code:   ", fontWeight = FontWeight.Bold, fontFamily = PlaypenSansBold)
                         Spacer(modifier = Modifier.width(8.dp))
                         OutlinedTextField(
                             value = code,
@@ -236,7 +238,7 @@ fun LoginScreen(navController: NavHostController, viewModel: LoginViewModel) {
                         contentColor = Color.Black
                     )
                 ) {
-                    Text(text = "Login", fontSize = 24.sp, fontWeight = FontWeight.Bold)
+                    Text(text = "Login", fontSize = 24.sp, fontWeight = FontWeight.Bold, fontFamily = PlaypenSansBold)
                 }
                 // Text to display the register as an option
                 RegisterText(navController);

@@ -10,11 +10,17 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeContentPadding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Face
 import androidx.compose.material3.Button
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.Slider
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
@@ -33,6 +39,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
+import com.example.safecircle.ChildSettings
+import com.example.safecircle.Dashboard
 import com.example.safecircle.database.FamilyDatabase
 import com.example.safecircle.database.FamilyLocationDao
 import com.example.safecircle.ui.components.map.MapMarkerOverlay
@@ -183,6 +191,14 @@ fun MapsScreen(navController: NavController, username: String? = null) {
                 )
             }
             MapMarkerOverlay(viewModel = viewModel, username = username)
+        }
+        IconButton(
+            onClick = { navController.navigate(Dashboard.route) },
+            modifier = Modifier
+                .padding(top = 8.dp, start = 8.dp)  // Adjust this padding as needed
+                .align(Alignment.TopStart)  // This will position the button in the top-left corner
+        ) {
+            Icon(imageVector = Icons.Default.ArrowBack, contentDescription = "Navigation", Modifier.size(36.dp))
         }
         // Access the selected marker using its ID
         val selectedEnhancedMarker = selectedMarkerId.value?.let { markers.value[it] }
