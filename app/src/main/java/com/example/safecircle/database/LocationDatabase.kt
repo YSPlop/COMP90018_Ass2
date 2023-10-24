@@ -97,7 +97,8 @@ class FamilyLocationDao private constructor (
                 lat = it.value.markerState.position.latitude,
                 lng = it.value.markerState.position.longitude,
                 radius = it.value.properties.value.radius,
-                name = it.value.properties.value.name
+                name = it.value.properties.value.name,
+                icon = it.value.properties.value.icon
             )
         }
 
@@ -128,7 +129,7 @@ class FamilyLocationDao private constructor (
                 val firebaseMarker = childSnapshot.getValue(FirebaseMarker::class.java)
                 if (firebaseMarker != null) {
                     val markerState = MarkerState(position= LatLng(firebaseMarker.lat, firebaseMarker.lng))
-                    val properties = MarkerProperties(firebaseMarker.radius, firebaseMarker.name)
+                    val properties = MarkerProperties(firebaseMarker.radius, firebaseMarker.name, firebaseMarker.icon)
                     markersMap[firebaseMarker.id] = EnhancedMarkerState(markerState, mutableStateOf(properties))
                 }
             }
@@ -144,7 +145,8 @@ class FamilyLocationDao private constructor (
         val lat: Double,
         val lng: Double,
         val radius: Float,
-        val name: String
+        val name: String,
+        val icon: Int
     ){
         // This constructor is for Firebase
         constructor() : this(
@@ -152,7 +154,8 @@ class FamilyLocationDao private constructor (
             lat = 0.0,
             lng = 0.0,
             radius = 0f,
-            name = ""
+            name = "",
+            icon = 0
         )
     }
 }
