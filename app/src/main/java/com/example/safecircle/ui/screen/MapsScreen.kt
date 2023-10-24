@@ -193,7 +193,9 @@ fun MapsScreen(navController: NavController, username: String? = null) {
             modifier = Modifier
                 .safeContentPadding()
                 .fillMaxSize(),
-            cameraPositionState = cameraPositionState,
+            cameraPositionState = remember {
+                cameraPositionState
+            },
 
             // Deselect the marker when the map is clicked
             onMapClick = { _ ->
