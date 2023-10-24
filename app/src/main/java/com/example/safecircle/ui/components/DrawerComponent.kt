@@ -38,23 +38,27 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.Font
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import com.example.safecircle.About
 import com.example.safecircle.Dashboard
 import com.example.safecircle.Help
+import com.example.safecircle.R
 import com.example.safecircle.Settings
 import com.example.safecircle.ui.theme.CyanSecondary
+import com.example.safecircle.ui.theme.PlaypenSans
+import com.example.safecircle.ui.theme.PlaypenSansBold
 import kotlinx.coroutines.launch
-
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AppTopBar(drawerState: DrawerState, title: String) {
     val scope = rememberCoroutineScope()
     TopAppBar(
-        title = { Text(title) },
+        title = { Text(title, fontFamily = PlaypenSans,) },
         navigationIcon = {
             IconButton(onClick = {
                 scope.launch {
@@ -87,7 +91,7 @@ fun AppDrawer(drawerState: DrawerState, navController: NavHostController) {
             verticalArrangement = Arrangement.Bottom
         ) {
             // Indent the text with padding if desired
-            Text(text = "SafeCircle", modifier = Modifier.padding(start = 8.dp), color = Color.White, fontSize = 24.sp)
+            Text(text = "SafeCircle", modifier = Modifier.padding(start = 8.dp), color = Color.White, fontSize = 24.sp, fontFamily = PlaypenSans)
             Spacer(modifier = Modifier.height(12.dp))
         }
 
@@ -103,7 +107,7 @@ fun AppDrawer(drawerState: DrawerState, navController: NavHostController) {
                 Row {
                     Icon(imageVector = Icons.Default.LocationOn, contentDescription = "Dashboard")
                     Spacer(modifier = Modifier.size(8.dp) )
-                    Text(text = "Dashboard")
+                    Text(text = "Dashboard", fontFamily = PlaypenSans)
                 }
 
                    },
@@ -118,7 +122,7 @@ fun AppDrawer(drawerState: DrawerState, navController: NavHostController) {
             text = { Row {
                 Icon(imageVector = Icons.Default.Settings, contentDescription = "Settings")
                 Spacer(modifier = Modifier.size(8.dp) )
-                Text(text = "Settings") }},
+                Text(text = "Settings", fontFamily = PlaypenSans) }},
             modifier = Modifier.clickable(onClick = {
                 scope.launch {
                     drawerState.close()
@@ -126,23 +130,23 @@ fun AppDrawer(drawerState: DrawerState, navController: NavHostController) {
                 }
             })
         )
-        ListItem(
-            text = { Row {
-                Icon(imageVector = Icons.Default.Build, contentDescription = "Settings")
-                Spacer(modifier = Modifier.size(8.dp) )
-                Text(text = "Help") }},
-            modifier = Modifier.clickable(onClick = {
-                scope.launch {
-                    drawerState.close()
-                    navController.navigate(Help.route)
-                }
-            })
-        )
+//        ListItem(
+//            text = { Row {
+//                Icon(imageVector = Icons.Default.Build, contentDescription = "Settings")
+//                Spacer(modifier = Modifier.size(8.dp) )
+//                Text(text = "Help", fontFamily = PlaypenSans) }},
+//            modifier = Modifier.clickable(onClick = {
+//                scope.launch {
+//                    drawerState.close()
+//                    navController.navigate(Help.route)
+//                }
+//            })
+//        )
         ListItem(
             text = { Row {
                 Icon(imageVector = Icons.Default.Info, contentDescription = "Settings")
                 Spacer(modifier = Modifier.size(8.dp) )
-                Text(text = "About") }},
+                Text(text = "About", fontFamily = PlaypenSans) }},
             modifier = Modifier.clickable(onClick = {
                 scope.launch {
                     drawerState.close()

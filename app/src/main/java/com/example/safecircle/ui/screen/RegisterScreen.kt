@@ -49,6 +49,7 @@ import com.example.safecircle.Login
 import com.example.safecircle.R
 import com.example.safecircle.viewmodel.RegisterViewModel
 import com.example.safecircle.ui.theme.CyanSecondary
+import com.example.safecircle.ui.theme.PlaypenSansBold
 import com.example.safecircle.ui.theme.YellowPrimary
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -85,12 +86,15 @@ fun RegisterScreen(navController: NavHostController, viewModel: RegisterViewMode
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.SpaceEvenly
             ) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically
+                ) { Text(text = "Parent Account Registration", fontWeight = FontWeight.Bold, color = CyanSecondary, fontSize = 22.sp, fontFamily = PlaypenSansBold)}
                 // FamilyID Row
                 Row(
                     modifier = Modifier.padding(16.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Text(text = "Family ID:", fontWeight = FontWeight.Bold)
+                    Text(text = "Family ID:", fontWeight = FontWeight.Bold, fontFamily = PlaypenSansBold)
                     Spacer(modifier = Modifier.width(8.dp))
                     OutlinedTextField(
                         value = familyID,
@@ -106,7 +110,7 @@ fun RegisterScreen(navController: NavHostController, viewModel: RegisterViewMode
                     modifier = Modifier.padding(16.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Text(text = "Username:", fontWeight = FontWeight.Bold)
+                    Text(text = "Username:", fontWeight = FontWeight.Bold, fontFamily = PlaypenSansBold)
                     Spacer(modifier = Modifier.width(8.dp))
                     OutlinedTextField(
                         value = username,
@@ -123,7 +127,7 @@ fun RegisterScreen(navController: NavHostController, viewModel: RegisterViewMode
                     modifier = Modifier.padding(16.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Text(text = "Password:", fontWeight = FontWeight.Bold)
+                    Text(text = "Password:", fontWeight = FontWeight.Bold, fontFamily = PlaypenSansBold)
                     Spacer(modifier = Modifier.width(8.dp))
                     OutlinedTextField(
                         value = password,
@@ -159,7 +163,7 @@ fun RegisterScreen(navController: NavHostController, viewModel: RegisterViewMode
                         contentColor = Color.Black
                     )
                 ) {
-                    Text(text = "Register", fontSize = 24.sp, fontWeight = FontWeight.Bold)
+                    Text(text = "Register", fontSize = 24.sp, fontWeight = FontWeight.Bold, fontFamily = PlaypenSansBold)
                 }
 
                 // Text to display the login as a option
@@ -215,7 +219,8 @@ fun RegisterBanner() {
         color = Color(0xFFFFD567),
         fontSize = 32.sp,
         textAlign = TextAlign.Center,
-        fontWeight = FontWeight.ExtraBold
+        fontWeight = FontWeight.ExtraBold,
+        fontFamily = PlaypenSansBold
     )
     Spacer(modifier = Modifier.height(8.dp))
     Text(
@@ -223,7 +228,8 @@ fun RegisterBanner() {
         color = Color.White,
         fontSize = 18.sp,
         textAlign = TextAlign.Center,
-        fontWeight = FontWeight.ExtraBold
+        fontWeight = FontWeight.ExtraBold,
+        fontFamily = PlaypenSansBold
     )
 
     Image(

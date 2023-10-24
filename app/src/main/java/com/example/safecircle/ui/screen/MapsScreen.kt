@@ -35,14 +35,15 @@ import androidx.compose.material.MaterialTheme.typography
 import androidx.compose.material.Shapes
 import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.AccountBox
-import androidx.compose.material.icons.filled.Favorite
-import androidx.compose.material.icons.filled.Notifications
-import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.Button
 import androidx.compose.material3.FilledIconButton
 import androidx.compose.material3.IconButtonColors
 import androidx.compose.material3.IconButtonDefaults.filledIconButtonColors
+import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Face
+import androidx.compose.material3.Button
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.Slider
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
@@ -51,6 +52,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCompositionContext
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -65,6 +67,8 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.example.safecircle.R
+import com.example.safecircle.ChildSettings
+import com.example.safecircle.Dashboard
 import com.example.safecircle.database.FamilyDatabase
 import com.example.safecircle.database.FamilyLocationDao
 import com.example.safecircle.ui.components.map.MapMarkerOverlay
@@ -86,6 +90,7 @@ import com.google.maps.android.compose.GoogleMap
 import com.google.maps.android.compose.Marker
 import com.google.maps.android.compose.MarkerState
 import com.google.maps.android.compose.rememberCameraPositionState
+import kotlinx.coroutines.launch
 
 
 @Composable
@@ -94,8 +99,8 @@ fun MapsScreen(navController: NavController, username: String? = null) {
     val context = LocalContext.current;
     val familyId = PreferenceHelper(context).getFamilyID();
     var familyLocationDao = FamilyLocationDao.getInstance(familyId!!)
-    val markers = remember { mutableStateOf(mutableMapOf<Int, EnhancedMarkerState>()) }
-    val lastKnownMarkers = remember { mutableStateOf(mutableMapOf<Int, EnhancedMarkerState>()) }
+    val markers = remember { mutableStateOf(mapOf<Int, EnhancedMarkerState>()) }
+    val lastKnownMarkers = remember { mutableStateOf(mapOf<Int, EnhancedMarkerState>()) }
     val selectedMarkerId = remember { mutableStateOf<Int?>(null) }
     // List of icons
     val poi = painterResource(id = R.drawable.poi)
@@ -140,21 +145,30 @@ fun MapsScreen(navController: NavController, username: String? = null) {
     )
 
     val cameraPositionState = viewModel.cameraState
-    var dataLoaded by remember {
-        mutableStateOf(false)
-    }
+    val scope = rememberCoroutineScope()
     LaunchedEffect(viewModel.memberLocations) {
-        if (!dataLoaded) {
-            viewModel.fetchMemberLocationsAsync()
-            dataLoaded = true
-        }
-        Log.d("MapMarkerOverlay", "LaunchedEffect triggered");
-
-        val memberLocations = viewModel.memberLocations
-        val cameraUpdate = computeCameraUpdate(memberLocations.values)
-        if (cameraUpdate != null) {
-            cameraPositionState.animate(cameraUpdate, 500)
-        }
+        // initial fetching
+        if (viewModel.memberLocations.isEmpty()) {
+            viewModel.fetchMemberLocationsAsync {
+                val locations = it.values.toMutableList()
+//                markers.value.forEach {
+//                    locations.add(it.value.markerState.position)
+//                }
+                val update = computeCameraUpdate(locations)
+                if (update != null) {
+                    scope.launch { cameraPositionState.animate(update) }
+                }
+            }
+       } else {
+            val locations = viewModel.memberLocations.values.toMutableList()
+//            markers.value.forEach {
+//                locations.add(it.value.markerState.position)
+//            }
+            val update = computeCameraUpdate(locations)
+            if (update != null) {
+                 cameraPositionState.animate(update)
+            }
+       }
     }
 
     LaunchedEffect(Unit) {
@@ -232,6 +246,14 @@ fun MapsScreen(navController: NavController, username: String? = null) {
                 )
             }
             MapMarkerOverlay(viewModel = viewModel, username = username)
+        }
+        IconButton(
+            onClick = { navController.navigate(Dashboard.route) },
+            modifier = Modifier
+                .padding(top = 8.dp, start = 8.dp)  // Adjust this padding as needed
+                .align(Alignment.TopStart)  // This will position the button in the top-left corner
+        ) {
+            Icon(imageVector = Icons.Default.ArrowBack, contentDescription = "Navigation", Modifier.size(36.dp))
         }
         // Access the selected marker using its ID
         val selectedEnhancedMarker = selectedMarkerId.value?.let { markers.value[it] }
@@ -342,7 +364,10 @@ fun MapsScreen(navController: NavController, username: String? = null) {
                     Button(
                         // Delete marker for this child
                         onClick = {
-                            markers.value.remove(selectedMarkerId.value)
+//                            markers.value = markers.value.remove(selectedMarkerId.value)
+                            markers.value = markers.value.filter {
+                                it.key != selectedMarkerId.value
+                            }
                             familyId?.let { famId ->
                                 username?.let { objId ->
                                     familyLocationDao.pushMarkersToChild(famId, objId, markers.value)
@@ -377,26 +402,6 @@ fun MapsScreen(navController: NavController, username: String? = null) {
             }
         }
     }
-//    if (showDialog.value) {
-//        androidx.compose.material.AlertDialog(
-//            onDismissRequest = {
-//                showDialog.value = false
-//            },
-//            title = {
-//                Text(text = "Location Alert")
-//            },
-//            text = {
-//                Text("Current location is inside the circle!")
-//            },
-//            confirmButton = {
-//                Button(onClick = {
-//                    showDialog.value = false
-//                }) {
-//                    Text("OK")
-//                }
-//            }
-//        )
-//    }
 }
 fun generateSmallIcons(context: Context, icons: List<Int>): List<Bitmap> {
     val height = 150
@@ -409,6 +414,7 @@ fun generateSmallIcons(context: Context, icons: List<Int>): List<Bitmap> {
 }
 
 private fun computeCameraUpdate(markers: Iterable<LatLng>): CameraUpdate? {
+    Log.d("MapMarkerOverlay", "Computing updates for $markers")
     val markersList = markers.toList()
     if (markersList.isEmpty()) {
         return null

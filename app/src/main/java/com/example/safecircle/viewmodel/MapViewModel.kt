@@ -22,7 +22,6 @@ class MapViewModel(
         _familyLocationDao.listenForCurrentLocationChanges {
             Log.d("LocationShringScreenViewModel", it.toString())
             memberLocations = it
-
         }
 
         val uniMelbCoord = LatLng(-37.798919,144.964232)
@@ -32,6 +31,10 @@ class MapViewModel(
      fun fetchMemberLocationsAsync() {
          _familyLocationDao.getMembersLocationsAsync { memberLocations = it }
      }
+
+    fun fetchMemberLocationsAsync(callback: (Map<String, LatLng>) -> Unit) {
+        _familyLocationDao.getMembersLocationsAsync(callback)
+    }
 
 
 }

@@ -2,26 +2,37 @@ package com.example.safecircle.ui.screen
 
 import android.Manifest
 import android.annotation.SuppressLint
+import android.app.Activity
 import android.app.ActivityManager
 import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
+import android.content.pm.PackageManager
+import android.net.Uri
 import android.os.Build
+import android.telephony.SmsManager
 import android.util.Log
+import android.widget.Toast
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Face
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.ElevatedButton
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -53,6 +64,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.unit.sp
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -62,6 +74,8 @@ import com.example.safecircle.database.FamilyLocationDao
 import com.example.safecircle.ui.components.map.MapMarkerOverlay
 import com.example.safecircle.viewmodel.MapViewModel
 import com.example.safecircle.sensors.ForegroundSensorService
+import com.example.safecircle.ui.theme.PlaypenSansBold
+import com.example.safecircle.ui.theme.YellowPrimary
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.maps.CameraUpdate
 import com.google.android.gms.maps.CameraUpdateFactory
@@ -183,7 +197,7 @@ fun ChildMapScreen(navController: NavHostController) {
 
         ) {
             TopAppBar(
-                title = { androidx.compose.material3.Text(username.toString())},
+                title = { androidx.compose.material3.Text(username.toString(), fontFamily = PlaypenSansBold)},
                 navigationIcon = {
                     IconButton(onClick = {navController.navigate(ChildSettings.route)}) {
                         Icon(imageVector = Icons.Default.Face, contentDescription = "Child Navigation", Modifier.size(36.dp))
@@ -222,6 +236,17 @@ fun ChildMapScreen(navController: NavHostController) {
                     )
                 }
                 MapMarkerOverlay(viewModel = viewModel, username = username)
+
+            }
+            Column(
+                horizontalAlignment = Alignment.Start,
+                modifier = Modifier
+//                    .fillMaxWidth()
+                    .padding(8.dp)
+                    .verticalScroll(rememberScrollState())
+                    .align(Alignment.BottomStart)  // This positions the Column at the bottom
+            ) {
+                helpPage()
             }
         }
     }
@@ -275,4 +300,193 @@ private fun computeCameraUpdate(markers: Iterable<LatLng>): CameraUpdate? {
     }
     val bounds = builder.build()
     return CameraUpdateFactory.newLatLngBounds(bounds, 500, 1000, 4)
+}
+
+@Composable
+fun helpPage(
+
+){
+    val context = LocalContext.current
+    val preferenceHelper = PreferenceHelper(context)
+    val emergencyContactNumber = preferenceHelper.getEmergencyContact()
+    val emergencyContactName = preferenceHelper.getUsername()
+
+    val tripleZero = "000"
+    val textMessageToSend = "Your child has clicked the emergency text button, please check on him/her"
+    val number = emergencyContactNumber.toString()
+
+    Row (
+        horizontalArrangement = Arrangement.Start,
+        modifier = Modifier.padding(start = 0.dp)  // Add left padding to the Row
+    ){
+        openDialer(tripleZero, "POLICE", context)
+        messageButton(
+            emergencyContactNumber = number,
+            textMessageToSend = textMessageToSend,
+            context = context
+        )
+        openDialer(emergencyContactNumber, emergencyContactName, context)
+
+    }
+
+}
+
+
+@Composable
+fun openDialer(
+    emergencyContactNumber: String?,
+    emergencyContactName: String?,
+    context: Context,
+) {
+
+    // in the below line, we are
+    // creating variables for URL
+    // Replace this with saving parents phone number
+
+
+
+    val phoneNumber = emergencyContactNumber
+
+    // on below line we are creating
+    // a variable for a context
+    val ctx = context
+
+    // on below line we are creating a column
+    Column(
+        // on below line we are specifying modifier
+        // and setting max height and max width
+        // for our column
+//        modifier = Modifier
+////            .fillMaxSize()
+////            .fillMaxHeight()
+////            .fillMaxWidth()
+//            // on below line we are
+//            // adding padding for our column
+//            .padding(5.dp),
+        // on below line we are specifying horizontal
+        // and vertical alignment for our column
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
+    ) {
+        // on below line adding a button to open URL
+        ElevatedButton(onClick = {
+            // on below line we are opening the dialer of our
+            // phone and passing phone number.
+            // Use format with "tel:" and phoneNumber created is
+            // stored in u.
+            val u = Uri.parse("tel:$phoneNumber")
+
+            // Create the intent and set the data for the
+            // intent as the phone number.
+            val i = Intent(Intent.ACTION_DIAL, u)
+            try {
+
+                // Launch the Phone app's dialer with a phone
+                // number to dial a call.
+                ctx.startActivity(i)
+            } catch (s: SecurityException) {
+
+                // show() method display the toast with
+                // exception message.
+                Toast.makeText(ctx, "An error occurred", Toast.LENGTH_LONG)
+                    .show()
+            }
+
+
+        },
+            colors = ButtonDefaults.elevatedButtonColors(Color.Red)
+        ) {
+            // on below line creating a text for our button.
+            if (emergencyContactName != null) {
+                androidx.compose.material3.Text(
+                    // on below line adding a text ,
+                    // padding, color and font size.
+                    text = emergencyContactName,
+//                    modifier = Modifier.padding(4.dp),
+                    color = Color.White,
+                    fontFamily = PlaypenSansBold
+                )
+            }
+        }
+    }
+}
+
+// Message button and call button
+@Composable
+fun messageButton(
+    emergencyContactNumber: String,
+    textMessageToSend: String,
+    context: Context,
+){
+    ElevatedButton(
+        onClick = {
+            val activity = context as Activity
+
+            val result = requestSmsPermission(activity, 123)
+
+            if (result) {
+                Log.i("SMS", "permissions granted")
+            }else{
+                Log.i("SMS", "no permissions ")
+                requestSmsPermission(activity, 123)
+            }
+
+//            startSMSRetrieverClient(context)
+
+            val newResult = requestSmsPermission(activity, 123)
+            if (newResult) {
+                Log.i("SMS", "permissions are working")
+                sendTextMessage1(context, emergencyContactNumber, textMessageToSend, activity)
+            }
+
+        },
+        colors = ButtonDefaults.buttonColors(
+            containerColor = YellowPrimary,
+            contentColor = Color.White
+        ),
+        modifier = Modifier
+            .padding(horizontal = 8.dp)
+    ) {
+        androidx.compose.material3.Text(
+            text = "Send Text",
+            color = Color.Black,
+            fontFamily = PlaypenSansBold
+        )
+    }
+
+}
+
+fun sendTextMessage1(context: Context, phoneNumber: String, message: String, activity: Activity) {
+
+
+    try{
+        // on below line initializing sms manager.
+        Log.i("SMS","I am about to start the manager")
+        val smsManager: SmsManager = SmsManager.getDefault()
+        Log.i("SMS","I am about to send the message")
+        smsManager.sendTextMessage(phoneNumber, null, message, null, null, 1)
+
+
+    }catch(e: java.lang.Exception){
+        // on below line handling error and
+        // displaying toast message.
+        Toast.makeText(
+            context,
+            "Error : " + e.message,
+            Toast.LENGTH_SHORT
+        ).show()
+
+        e.message?.let { Log.d("SMS", it)
+        }
+    }
+
+}
+fun requestSmsPermission(activity: Activity, requestCode: Int): Boolean {
+
+    if (activity.checkSelfPermission(android.Manifest.permission.SEND_SMS) == PackageManager.PERMISSION_GRANTED) {
+        return true
+    } else {
+        activity.requestPermissions(arrayOf(android.Manifest.permission.SEND_SMS), requestCode)
+        return false
+    }
 }

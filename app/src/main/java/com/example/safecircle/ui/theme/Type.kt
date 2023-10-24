@@ -2,9 +2,11 @@ package com.example.safecircle.ui.theme
 
 import androidx.compose.material3.Typography
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
+import com.example.safecircle.R
 
 // Set of Material typography styles to start with
 val Typography = Typography(
@@ -31,4 +33,11 @@ val Typography = Typography(
         letterSpacing = 0.5.sp
     )
     */
+)
+
+val PlaypenSans = FontFamily(
+    Font(R.font.playpen_sans_regular)
+)
+val PlaypenSansBold = FontFamily(
+    Font(R.font.playpen_sans_bold)
 )
