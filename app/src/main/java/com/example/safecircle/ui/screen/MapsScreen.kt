@@ -22,6 +22,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -49,6 +50,7 @@ import com.google.maps.android.compose.GoogleMap
 import com.google.maps.android.compose.Marker
 import com.google.maps.android.compose.MarkerState
 import com.google.maps.android.compose.rememberCameraPositionState
+import kotlinx.coroutines.launch
 
 
 @Composable
@@ -57,10 +59,9 @@ fun MapsScreen(navController: NavController, username: String? = null) {
     val context = LocalContext.current;
     val familyId = PreferenceHelper(context).getFamilyID();
     var familyLocationDao = FamilyLocationDao.getInstance(familyId!!)
-    val markers = remember { mutableStateOf(mutableMapOf<Int, EnhancedMarkerState>()) }
-    val lastKnownMarkers = remember { mutableStateOf(mutableMapOf<Int, EnhancedMarkerState>()) }
+    val markers = remember { mutableStateOf(mapOf<Int, EnhancedMarkerState>()) }
+    val lastKnownMarkers = remember { mutableStateOf(mapOf<Int, EnhancedMarkerState>()) }
     val selectedMarkerId = remember { mutableStateOf<Int?>(null) }
-    val showDialog = remember { mutableStateOf(false) }
 
     // Function to check if the markers has changed
     fun hasMarkersChanged(): Boolean {
@@ -92,21 +93,30 @@ fun MapsScreen(navController: NavController, username: String? = null) {
     )
 
     val cameraPositionState = viewModel.cameraState
-    var dataLoaded by remember {
-        mutableStateOf(false)
-    }
+    val scope = rememberCoroutineScope()
     LaunchedEffect(viewModel.memberLocations) {
-        if (!dataLoaded) {
-            viewModel.fetchMemberLocationsAsync()
-            dataLoaded = true
-        }
-        Log.d("MapMarkerOverlay", "LaunchedEffect triggered");
-
-        val memberLocations = viewModel.memberLocations
-        val cameraUpdate = computeCameraUpdate(memberLocations.values)
-        if (cameraUpdate != null) {
-            cameraPositionState.animate(cameraUpdate, 500)
-        }
+        // initial fetching
+        if (viewModel.memberLocations.isEmpty()) {
+            viewModel.fetchMemberLocationsAsync {
+                val locations = it.values.toMutableList()
+//                markers.value.forEach {
+//                    locations.add(it.value.markerState.position)
+//                }
+                val update = computeCameraUpdate(locations)
+                if (update != null) {
+                    scope.launch { cameraPositionState.animate(update) }
+                }
+            }
+       } else {
+            val locations = viewModel.memberLocations.values.toMutableList()
+//            markers.value.forEach {
+//                locations.add(it.value.markerState.position)
+//            }
+            val update = computeCameraUpdate(locations)
+            if (update != null) {
+                 cameraPositionState.animate(update)
+            }
+       }
     }
 
     LaunchedEffect(Unit) {
@@ -257,7 +267,10 @@ fun MapsScreen(navController: NavController, username: String? = null) {
                     Button(
                         // Delete marker for this child
                         onClick = {
-                            markers.value.remove(selectedMarkerId.value)
+//                            markers.value = markers.value.remove(selectedMarkerId.value)
+                            markers.value = markers.value.filter {
+                                it.key != selectedMarkerId.value
+                            }
                             familyId?.let { famId ->
                                 username?.let { objId ->
                                     familyLocationDao.pushMarkersToChild(famId, objId, markers.value)
@@ -292,29 +305,10 @@ fun MapsScreen(navController: NavController, username: String? = null) {
             }
         }
     }
-//    if (showDialog.value) {
-//        androidx.compose.material.AlertDialog(
-//            onDismissRequest = {
-//                showDialog.value = false
-//            },
-//            title = {
-//                Text(text = "Location Alert")
-//            },
-//            text = {
-//                Text("Current location is inside the circle!")
-//            },
-//            confirmButton = {
-//                Button(onClick = {
-//                    showDialog.value = false
-//                }) {
-//                    Text("OK")
-//                }
-//            }
-//        )
-//    }
 }
 
 private fun computeCameraUpdate(markers: Iterable<LatLng>): CameraUpdate? {
+    Log.d("MapMarkerOverlay", "Computing updates for $markers")
     val markersList = markers.toList()
     if (markersList.isEmpty()) {
         return null
