@@ -6,6 +6,7 @@ import android.app.Activity
 import android.app.ActivityManager
 import android.content.Context
 import android.content.Intent
+import android.graphics.Bitmap
 import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Build
@@ -62,10 +63,12 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.safecircle.R
 import com.example.safecircle.database.FamilyDatabase
 import com.example.safecircle.database.FamilyLocationDao
 import com.example.safecircle.ui.components.map.MapMarkerOverlay
@@ -76,6 +79,7 @@ import com.example.safecircle.ui.theme.YellowPrimary
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.maps.CameraUpdate
 import com.google.android.gms.maps.CameraUpdateFactory
+import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.gms.maps.model.LatLngBounds
 import com.google.maps.android.compose.Circle
 import kotlinx.coroutines.Dispatchers
@@ -87,7 +91,8 @@ import kotlin.math.sqrt
 
 data class MarkerProperties(
     var radius: Float = 100f,
-    var name: String = "Marker"
+    var name: String = "Marker",
+    var icon: Int = 0
 )
 
 data class EnhancedMarkerState(
@@ -110,8 +115,10 @@ fun ChildMapScreen(navController: NavHostController) {
     val childLocation = remember { mutableStateOf<LatLng?>(null) }
     val markers = remember { mutableStateOf(mutableMapOf<Int, EnhancedMarkerState>()) }
     val selectedMarkerId = remember { mutableStateOf<Int?>(null) }
+    val markerIcons = listOf(R.drawable.poi, R.drawable.home, R.drawable.school, R.drawable.friend, R.drawable.sport)
+    val smallIcons: List<Bitmap> = generateSmallIcons(context, markerIcons)
+    val colors = listOf(Color.Blue.copy(alpha = 0.3f), Color.Green.copy(alpha = 0.3f), Color.Red.copy(alpha = 0.3f), Color.Cyan.copy(alpha = 0.3f), Color.Magenta.copy(alpha = 0.3f))
     val showDialog = remember { mutableStateOf(false) }
-    val wasInsideCircle = remember { mutableStateOf(false) }
 
     fun isServiceRunning(serviceClass: Class<*>): Boolean {
         val manager = context.getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
@@ -219,12 +226,13 @@ fun ChildMapScreen(navController: NavHostController) {
                         onClick = {
                             selectedMarkerId.value = markerId
                             false
-                        }
+                        },
+                        icon = BitmapDescriptorFactory.fromBitmap(smallIcons[enhancedMarkerState.properties.value.icon]),
                     ){}
                     Circle(
                         center = enhancedMarkerState.markerState.position,
                         radius = enhancedMarkerState.properties.value.radius.toDouble(),
-                        fillColor = Color.Blue.copy(alpha = 0.3f)
+                        fillColor = colors[enhancedMarkerState.properties.value.icon]
                     )
                 }
                 MapMarkerOverlay(viewModel = viewModel, username = username)

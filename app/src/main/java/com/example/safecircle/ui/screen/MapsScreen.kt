@@ -1,21 +1,44 @@
 package com.example.safecircle.ui.screen
 
+import android.content.Context
+import android.content.res.Resources
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
+import android.graphics.Canvas
+import android.graphics.drawable.Drawable
 import android.util.Log
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeContentPadding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.selection.toggleable
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.Divider
+import androidx.compose.material.Icon
 import androidx.compose.material.MaterialTheme
+import androidx.compose.material.MaterialTheme.typography
+import androidx.compose.material.Shapes
 import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
+import androidx.compose.material3.Button
+import androidx.compose.material3.FilledIconButton
+import androidx.compose.material3.IconButtonColors
+import androidx.compose.material3.IconButtonDefaults.filledIconButtonColors
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Face
 import androidx.compose.material3.Button
@@ -28,31 +51,40 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCompositionContext
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
+import com.example.safecircle.R
 import com.example.safecircle.ChildSettings
 import com.example.safecircle.Dashboard
 import com.example.safecircle.database.FamilyDatabase
 import com.example.safecircle.database.FamilyLocationDao
 import com.example.safecircle.ui.components.map.MapMarkerOverlay
+import com.example.safecircle.ui.theme.YellowPrimary
 import com.example.safecircle.utils.ErrorDialog
 import com.example.safecircle.utils.PreferenceHelper
 import com.example.safecircle.viewmodel.MapViewModel
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.maps.CameraUpdate
 import com.google.android.gms.maps.CameraUpdateFactory
+import com.google.android.gms.maps.model.BitmapDescriptor
+import com.google.android.gms.maps.model.BitmapDescriptorFactory
+import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.LatLngBounds
+import com.google.maps.android.compose.CameraPositionState
 import com.google.maps.android.compose.Circle
 import com.google.maps.android.compose.GoogleMap
 import com.google.maps.android.compose.Marker
@@ -70,6 +102,18 @@ fun MapsScreen(navController: NavController, username: String? = null) {
     val markers = remember { mutableStateOf(mapOf<Int, EnhancedMarkerState>()) }
     val lastKnownMarkers = remember { mutableStateOf(mapOf<Int, EnhancedMarkerState>()) }
     val selectedMarkerId = remember { mutableStateOf<Int?>(null) }
+    // List of icons
+    val poi = painterResource(id = R.drawable.poi)
+    val home = painterResource(id = R.drawable.home)
+    val school = painterResource(id = R.drawable.school)
+    val friend = painterResource(id = R.drawable.friend)
+    val sport = painterResource(id = R.drawable.sport)
+    val icons = listOf(poi, home, school, friend, sport)
+    val markerIcons = listOf(R.drawable.poi, R.drawable.home, R.drawable.school, R.drawable.friend, R.drawable.sport)
+    val smallIcons: List<Bitmap> = generateSmallIcons(context, markerIcons)
+    val colors = listOf(Color.Blue.copy(alpha = 0.3f), Color.Green.copy(alpha = 0.3f), Color.Red.copy(alpha = 0.3f), Color.Cyan.copy(alpha = 0.3f), Color.Magenta.copy(alpha = 0.3f))
+    val showDialog = remember { mutableStateOf(false) }
+
 
     // Function to check if the markers has changed
     fun hasMarkersChanged(): Boolean {
@@ -189,6 +233,7 @@ fun MapsScreen(navController: NavController, username: String? = null) {
                 val enhancedMarkerState = entry.value
                 Marker(
                     state = enhancedMarkerState.markerState,
+                    icon = BitmapDescriptorFactory.fromBitmap(smallIcons[enhancedMarkerState.properties.value.icon]),
                     onClick = {
                         selectedMarkerId.value = markerId
                         true
@@ -197,7 +242,7 @@ fun MapsScreen(navController: NavController, username: String? = null) {
                 Circle(
                     center = enhancedMarkerState.markerState.position,
                     radius = enhancedMarkerState.properties.value.radius.toDouble(),
-                    fillColor = Color.Blue.copy(alpha = 0.3f)
+                    fillColor = colors[enhancedMarkerState.properties.value.icon]
                 )
             }
             MapMarkerOverlay(viewModel = viewModel, username = username)
@@ -242,6 +287,42 @@ fun MapsScreen(navController: NavController, username: String? = null) {
                         .padding(8.dp)
                         .fillMaxWidth()
                 )
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = 8.dp),
+                    horizontalArrangement = Arrangement.Center
+                ) {
+                    icons.forEachIndexed { index, icon ->
+                        FilledIconButton(
+                            onClick = {
+                                val updatedMarker = selectedEnhancedMarker?.copy(
+                                    properties = mutableStateOf(
+                                        selectedEnhancedMarker.properties.value.copy(icon = index)
+                                    )
+                                )
+                                if (updatedMarker != null && selectedMarkerId.value != null) {
+                                    markers.value = markers.value.toMutableMap().apply {
+                                        this[selectedMarkerId.value!!] = updatedMarker
+                                    }
+                                }
+                            },
+                            enabled = (index !=  selectedEnhancedMarker.properties.value.icon),
+                            colors = filledIconButtonColors(
+                                containerColor = Color.LightGray,
+                                disabledContainerColor = YellowPrimary
+                            )
+                        ) {
+//                            val tint by animateColorAsState(if (iconIndex == index) Color(0xFFEC407A) else Color(0xFFB0BEC5))
+                            Icon(
+                                painter = icon,
+                                contentDescription = "Home Marker",
+                                tint = Color.Unspecified,
+                                modifier = Modifier.size(24.dp)
+                            )
+                        }
+                    }
+                }
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -320,6 +401,15 @@ fun MapsScreen(navController: NavController, username: String? = null) {
                 }
             }
         }
+    }
+}
+fun generateSmallIcons(context: Context, icons: List<Int>): List<Bitmap> {
+    val height = 150
+    val width = 150
+
+    return icons.map { resourceId ->
+        val bitmap = BitmapFactory.decodeResource(context.resources, resourceId)
+        Bitmap.createScaledBitmap(bitmap, width, height, false)
     }
 }
 
