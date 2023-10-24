@@ -120,7 +120,7 @@ class ForegroundSensorService: Service()  {
         memberId = preferenceHelper.getUsername().toString()
         role = preferenceHelper.getRole()!!
 
-        locationDao = FamilyLocationDao.getInstance(familyId)
+        locationDao = FamilyLocationDao(familyId)
         familyDatabase = FamilyDatabase()
 
         if(role == Role.CHILD) {

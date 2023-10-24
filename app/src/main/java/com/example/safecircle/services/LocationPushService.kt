@@ -49,7 +49,7 @@ class LocationPushService : Service() {
             ACTION_START -> {
                 familyId = intent.getStringExtra("familyId")!!
                 memberId = intent.getStringExtra("memberId")!!
-                locationDao = FamilyLocationDao.getInstance(familyId)
+                locationDao = FamilyLocationDao(familyId)
                 start()
             }
             ACTION_STOP ->  stop()

@@ -16,14 +16,14 @@ class MapViewModel(
 ): ViewModel() {
     var memberLocations by mutableStateOf(mapOf<String, LatLng>())
         private set
-    private var _familyLocationDao = FamilyLocationDao.getInstance(familyId)
+    private var _familyLocationDao = FamilyLocationDao(familyId)
     val cameraState: CameraPositionState
     init {
         _familyLocationDao.listenForCurrentLocationChanges {
             Log.d("LocationShringScreenViewModel", it.toString())
             memberLocations = it
         }
-
+        Log.d("LocationDatabase", "Location Database Contructed FamID=$familyId")
         val uniMelbCoord = LatLng(-37.798919,144.964232)
         val cameraPosition = CameraPosition.fromLatLngZoom(uniMelbCoord, 15f)
         cameraState = CameraPositionState(cameraPosition)
@@ -33,7 +33,11 @@ class MapViewModel(
      }
 
     fun fetchMemberLocationsAsync(callback: (Map<String, LatLng>) -> Unit) {
-        _familyLocationDao.getMembersLocationsAsync(callback)
+        _familyLocationDao.getMembersLocationsAsync {
+            Log.d("LocationDatabase", "membersLocations: $it")
+            memberLocations = it
+            callback(it);
+        }
     }
 
 

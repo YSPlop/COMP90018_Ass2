@@ -48,6 +48,7 @@ import androidx.compose.material3.Slider
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -91,6 +92,7 @@ import com.google.maps.android.compose.Marker
 import com.google.maps.android.compose.MarkerState
 import com.google.maps.android.compose.rememberCameraPositionState
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withTimeout
 
 
 @Composable
@@ -98,7 +100,7 @@ fun MapsScreen(navController: NavController, username: String? = null) {
     Log.d("MapScreen", "Received username = $username")
     val context = LocalContext.current;
     val familyId = PreferenceHelper(context).getFamilyID();
-    var familyLocationDao = FamilyLocationDao.getInstance(familyId!!)
+    var familyLocationDao = FamilyLocationDao(familyId!!)
     val markers = remember { mutableStateOf(mapOf<Int, EnhancedMarkerState>()) }
     val lastKnownMarkers = remember { mutableStateOf(mapOf<Int, EnhancedMarkerState>()) }
     val selectedMarkerId = remember { mutableStateOf<Int?>(null) }
@@ -114,7 +116,7 @@ fun MapsScreen(navController: NavController, username: String? = null) {
     val colors = listOf(Color.Blue.copy(alpha = 0.3f), Color.Green.copy(alpha = 0.3f), Color.Red.copy(alpha = 0.3f), Color.Cyan.copy(alpha = 0.3f), Color.Magenta.copy(alpha = 0.3f))
     val showDialog = remember { mutableStateOf(false) }
 
-
+    val cameraPositionState = rememberCameraPositionState();
     // Function to check if the markers has changed
     fun hasMarkersChanged(): Boolean {
         return markers.value != lastKnownMarkers.value
@@ -144,32 +146,30 @@ fun MapsScreen(navController: NavController, username: String? = null) {
         }
     )
 
-    val cameraPositionState = viewModel.cameraState
     val scope = rememberCoroutineScope()
-    LaunchedEffect(viewModel.memberLocations) {
+    SideEffect {
         // initial fetching
-        if (viewModel.memberLocations.isEmpty()) {
-            viewModel.fetchMemberLocationsAsync {
-                val locations = it.values.toMutableList()
+        viewModel.fetchMemberLocationsAsync {
+            var locations = it.values.toMutableList()
 //                markers.value.forEach {
 //                    locations.add(it.value.markerState.position)
 //                }
-                val update = computeCameraUpdate(locations)
-                if (update != null) {
-                    scope.launch { cameraPositionState.animate(update) }
-                }
+            Log.d("MapMarkerOverlay", "Calling from LaunchedEffect init it=$it")
+            if (username != null) {
+                locations = viewModel.memberLocations
+                    .filter { it.key == username }
+                    .values
+                    .toMutableList()
             }
-       } else {
-            val locations = viewModel.memberLocations.values.toMutableList()
-//            markers.value.forEach {
-//                locations.add(it.value.markerState.position)
-//            }
             val update = computeCameraUpdate(locations)
             if (update != null) {
-                 cameraPositionState.animate(update)
+                Log.d("MapMarkerOverlay", "Update Camera init")
+                cameraPositionState.move(update)
             }
-       }
+        }
+
     }
+
 
     LaunchedEffect(Unit) {
         // Initialize marker status for the child
@@ -189,6 +189,7 @@ fun MapsScreen(navController: NavController, username: String? = null) {
     Box(
         modifier = Modifier.fillMaxSize()
     ){
+        Log.d("MapMarkerOverlay", "Google Map rendered")
         GoogleMap(
             modifier = Modifier
                 .safeContentPadding()
@@ -422,7 +423,9 @@ private fun computeCameraUpdate(markers: Iterable<LatLng>): CameraUpdate? {
         return null
     }
     if (markersList.size == 1) {
-        return CameraUpdateFactory.newLatLngZoom(markersList[0], 15f)
+        return CameraUpdateFactory.newCameraPosition(
+            CameraPosition(markersList[0], 15f, 0f, 0f)
+        )
     }
     val builder = LatLngBounds.builder()
     markersList.forEach {

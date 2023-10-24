@@ -108,7 +108,7 @@ fun ChildMapScreen(navController: NavHostController) {
     val context = LocalContext.current
     val preferenceHelper = PreferenceHelper(context)
     val familyId = PreferenceHelper(context).getFamilyID()
-    var familyLocationDao = FamilyLocationDao.getInstance(familyId!!)
+    var familyLocationDao = FamilyLocationDao(familyId!!)
     val username = preferenceHelper.getUsername()
     val role = preferenceHelper.getRole()
     val emergencyContactNumber = preferenceHelper.getEmergencyContact()

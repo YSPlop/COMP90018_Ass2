@@ -13,20 +13,14 @@ import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
 import com.google.maps.android.compose.MarkerState
 
-class FamilyLocationDao private constructor (
+class FamilyLocationDao constructor (
     private val familyId: String
 ){
     companion object{
         private const val COLLECTION_NAME = "test_locations"
         private const val LOG_TAG = "FamilyLocationDao"
-        private var instance: FamilyLocationDao? = null
-        fun getInstance(familyId: String): FamilyLocationDao {
-            if (instance == null) {
-                instance = FamilyLocationDao(familyId)
-            }
-            return instance!! // Trust me, it's not null
-        }
     }
+
 
 
     private val locationCollection: DatabaseReference = FirebaseDatabase
