@@ -8,6 +8,7 @@ import android.net.Uri
 import android.telephony.SmsManager
 import android.util.Log
 import android.widget.Toast
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -50,6 +51,8 @@ import com.example.safecircle.Login
 import com.example.safecircle.database.FamilyDatabase
 import com.example.safecircle.database.PersonalDetails
 import com.example.safecircle.sensors.ForegroundSensorService
+import com.example.safecircle.ui.theme.CyanSecondary
+import com.example.safecircle.ui.theme.PlaypenSansBold
 import com.example.safecircle.ui.theme.YellowPrimary
 import java.lang.Exception
 
@@ -81,26 +84,26 @@ fun ChildSettingsScreen(navController: NavHostController) {
     ) {
         // TopAppBar
         TopAppBar(
-            title = { androidx.compose.material3.Text(username.toString()) },
+            title = { androidx.compose.material3.Text(username.toString(), fontFamily = PlaypenSansBold) },
             navigationIcon = {
                 IconButton(onClick = {navController.navigate(ChildMap.route)}) {
                     Icon(imageVector = Icons.Default.ArrowBack, contentDescription = "Child Navigation", Modifier.size(36.dp))
                 }
             }
         )
-        Divider()
+        Divider(modifier = Modifier.padding(8.dp))
         Row {
-            Text(text = "emergency contact number: ")
-            Text(text = emergencyContactNumber.toString())
+            Text(text = "Emergency Contact Number: ", fontFamily = PlaypenSansBold)
+            Text(text = if (emergencyContactNumber != null) emergencyContactNumber.toString() else "NOT SET YET", fontFamily = PlaypenSansBold)
         }
         // Display parents' details as cards
         parentsList.forEach { parent ->
-            Card(modifier = Modifier.padding(24.dp)) {
-                Column {
-                    Text(text = parent.firstName)
-                    Text(text = parent.lastName)
-                    Text(text = parent.address)
-                    Text(text = parent.phoneNumber)
+            Card(modifier = Modifier.padding(16.dp)) {
+                Column (modifier = Modifier.padding(36.dp)) {
+                    Text(text = parent.firstName, fontFamily = PlaypenSansBold, fontSize = 24.sp)
+                    Text(text = parent.lastName, fontFamily = PlaypenSansBold)
+                    Text(text = parent.address, fontFamily = PlaypenSansBold)
+                    Text(text = parent.phoneNumber, fontFamily = PlaypenSansBold)
                     Spacer(modifier = Modifier.height(8.dp))
                     Button(
                         onClick = {
@@ -109,11 +112,11 @@ fun ChildSettingsScreen(navController: NavHostController) {
                             preferenceHelper.setEmergencyContact(parent.phoneNumber)
                         },
                         colors = ButtonDefaults.buttonColors(
-                            containerColor = if (selectedEmergencyContact == parent.phoneNumber) Color.Gray else Color.Red,
+                            containerColor = if (selectedEmergencyContact == parent.phoneNumber) Color.Gray else YellowPrimary,
                             contentColor = Color.White
                         )
                     ) {
-                        Text(text = "Set as Emergency Contact")
+                        Text(text = "Set as Emergency Contact", fontFamily = PlaypenSansBold)
                     }
                 }
             }
@@ -148,7 +151,7 @@ fun ChildSettingsScreen(navController: NavHostController) {
             ),
             modifier = Modifier.width(240.dp)
         ) {
-            androidx.compose.material3.Text(text = "Log out")
+            androidx.compose.material3.Text(text = "Log out", fontFamily = PlaypenSansBold)
         }
 
     }

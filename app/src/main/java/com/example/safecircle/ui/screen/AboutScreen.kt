@@ -46,6 +46,7 @@ import androidx.navigation.NavHostController
 import com.example.safecircle.ui.components.AppDrawer
 import com.example.safecircle.ui.components.AppTopBar
 import com.example.safecircle.ui.theme.CyanSecondary
+import com.example.safecircle.ui.theme.PlaypenSansBold
 import com.example.safecircle.ui.theme.SafeCircleTheme
 import com.example.safecircle.ui.theme.YellowPrimary
 
@@ -329,11 +330,12 @@ fun ListItem(name: String){
             Column(
                 modifier = Modifier
                     .weight(1f)
-                    .padding(vertical = 10.dp, horizontal = 15.dp)
+                    .padding(vertical = 8.dp, horizontal = 15.dp)
             ) {
                 Text(text = name,
                     style = MaterialTheme.typography.bodyLarge.copy(
-                    fontWeight = FontWeight.Bold)
+                    fontWeight = FontWeight.Bold, fontFamily = PlaypenSansBold
+                    )
                     // slightly larger font size
                 )
             }

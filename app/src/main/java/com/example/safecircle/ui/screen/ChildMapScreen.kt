@@ -59,6 +59,7 @@ import com.example.safecircle.database.FamilyLocationDao
 import com.example.safecircle.ui.components.map.MapMarkerOverlay
 import com.example.safecircle.viewmodel.MapViewModel
 import com.example.safecircle.sensors.ForegroundSensorService
+import com.example.safecircle.ui.theme.PlaypenSansBold
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.maps.CameraUpdate
 import com.google.android.gms.maps.CameraUpdateFactory
@@ -176,7 +177,7 @@ fun ChildMapScreen(navController: NavHostController) {
 
         ) {
             TopAppBar(
-                title = { androidx.compose.material3.Text(username.toString())},
+                title = { androidx.compose.material3.Text(username.toString(), fontFamily = PlaypenSansBold)},
                 navigationIcon = {
                     IconButton(onClick = {navController.navigate(ChildSettings.route)}) {
                         Icon(imageVector = Icons.Default.Face, contentDescription = "Child Navigation", Modifier.size(36.dp))
