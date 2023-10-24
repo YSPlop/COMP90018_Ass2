@@ -130,18 +130,18 @@ fun AppDrawer(drawerState: DrawerState, navController: NavHostController) {
                 }
             })
         )
-        ListItem(
-            text = { Row {
-                Icon(imageVector = Icons.Default.Build, contentDescription = "Settings")
-                Spacer(modifier = Modifier.size(8.dp) )
-                Text(text = "Help", fontFamily = PlaypenSans) }},
-            modifier = Modifier.clickable(onClick = {
-                scope.launch {
-                    drawerState.close()
-                    navController.navigate(Help.route)
-                }
-            })
-        )
+//        ListItem(
+//            text = { Row {
+//                Icon(imageVector = Icons.Default.Build, contentDescription = "Settings")
+//                Spacer(modifier = Modifier.size(8.dp) )
+//                Text(text = "Help", fontFamily = PlaypenSans) }},
+//            modifier = Modifier.clickable(onClick = {
+//                scope.launch {
+//                    drawerState.close()
+//                    navController.navigate(Help.route)
+//                }
+//            })
+//        )
         ListItem(
             text = { Row {
                 Icon(imageVector = Icons.Default.Info, contentDescription = "Settings")
