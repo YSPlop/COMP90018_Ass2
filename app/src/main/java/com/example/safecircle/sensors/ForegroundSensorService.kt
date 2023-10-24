@@ -17,6 +17,7 @@ import com.example.safecircle.database.Role
 import com.example.safecircle.interfaces.LocationClient
 import com.example.safecircle.ui.screen.EnhancedMarkerState
 import com.example.safecircle.utils.DefaultLocationClient
+import com.example.safecircle.utils.GlobalState
 import com.example.safecircle.utils.PreferenceHelper
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.maps.model.LatLng
@@ -68,7 +69,7 @@ class ForegroundSensorService: Service()  {
     private lateinit var locationDao: FamilyLocationDao
     private lateinit var familyDatabase: FamilyDatabase
     private lateinit var locationClient: LocationClient
-    private val markers = mutableStateOf(mutableMapOf<Int, EnhancedMarkerState>())
+//    val markers = mutableStateOf(mapOf<Int, EnhancedMarkerState>())
 
     companion object{
         @Volatile
@@ -134,10 +135,10 @@ class ForegroundSensorService: Service()  {
                         var isInside = false
                         var markerName = ""
                         if (retrievedMarkers != null) {
-                            markers.value = retrievedMarkers
+                            GlobalState.markers = retrievedMarkers
 
                             // Check if the current location is inside any marker circle
-                            for (enhancedMarker in markers.value.values) {
+                            for (enhancedMarker in GlobalState.markers.values) {
                                 val markerLocation = enhancedMarker.markerState.position
                                 val radius = enhancedMarker.properties.value.radius
                                 if (isLocationInsideCircle(

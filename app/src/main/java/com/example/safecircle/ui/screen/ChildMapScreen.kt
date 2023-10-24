@@ -76,6 +76,7 @@ import com.example.safecircle.viewmodel.MapViewModel
 import com.example.safecircle.sensors.ForegroundSensorService
 import com.example.safecircle.ui.theme.PlaypenSansBold
 import com.example.safecircle.ui.theme.YellowPrimary
+import com.example.safecircle.utils.GlobalState
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.maps.CameraUpdate
 import com.google.android.gms.maps.CameraUpdateFactory
@@ -113,7 +114,7 @@ fun ChildMapScreen(navController: NavHostController) {
     val emergencyContactNumber = preferenceHelper.getEmergencyContact()
     val objectID = preferenceHelper.getObjectId()
     val childLocation = remember { mutableStateOf<LatLng?>(null) }
-    val markers = remember { mutableStateOf(mutableMapOf<Int, EnhancedMarkerState>()) }
+    val markers = remember { mutableStateOf(mapOf<Int, EnhancedMarkerState>()) }
     val selectedMarkerId = remember { mutableStateOf<Int?>(null) }
     val markerIcons = listOf(R.drawable.poi, R.drawable.home, R.drawable.school, R.drawable.friend, R.drawable.sport)
     val smallIcons: List<Bitmap> = generateSmallIcons(context, markerIcons)
@@ -171,7 +172,7 @@ fun ChildMapScreen(navController: NavHostController) {
             cameraPositionState.animate(cameraUpdate, 500)
         }
     }
-    LaunchedEffect(Unit) {
+    LaunchedEffect(GlobalState.markers) {
         try {
             // Initialize marker status for the child
             familyId?.let { famId ->
