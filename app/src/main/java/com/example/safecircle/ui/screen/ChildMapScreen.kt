@@ -59,6 +59,7 @@ import com.google.maps.android.compose.MarkerState
 import com.google.maps.android.compose.rememberCameraPositionState
 import androidx.compose.material3.Slider
 import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.draw.clip
@@ -155,23 +156,30 @@ fun ChildMapScreen(navController: NavHostController) {
         }
     )
 
-    val cameraPositionState = viewModel.cameraState
-    var dataLoaded by remember {
-        mutableStateOf(false)
-    }
-    LaunchedEffect(viewModel.memberLocations) {
-        if (!dataLoaded) {
-            viewModel.fetchMemberLocationsAsync()
-            dataLoaded = true
+    val cameraPositionState = rememberCameraPositionState();
+    SideEffect {
+        // initial fetching
+        viewModel.fetchMemberLocationsAsync {
+            var locations = it.values.toMutableList()
+//                markers.value.forEach {
+//                    locations.add(it.value.markerState.position)
+//                }
+            Log.d("MapMarkerOverlay", "Calling from LaunchedEffect init it=$it")
+            if (username != null) {
+                locations = viewModel.memberLocations
+                    .filter { it.key == username }
+                    .values
+                    .toMutableList()
+            }
+            val update = computeCameraUpdate(locations)
+            if (update != null) {
+                Log.d("MapMarkerOverlay", "Update Camera init")
+                cameraPositionState.move(update)
+            }
         }
-        Log.d("MapMarkerOverlay", "LaunchedEffect triggered");
 
-        val memberLocations = viewModel.memberLocations
-        val cameraUpdate = computeCameraUpdate(memberLocations.values)
-        if (cameraUpdate != null) {
-            cameraPositionState.animate(cameraUpdate, 500)
-        }
     }
+
     LaunchedEffect(GlobalState.markers) {
         try {
             // Initialize marker status for the child
