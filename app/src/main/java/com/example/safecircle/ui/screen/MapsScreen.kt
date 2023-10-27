@@ -28,11 +28,15 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.selection.toggleable
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.ButtonColors
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material.Divider
 import androidx.compose.material.Icon
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.MaterialTheme.typography
 import androidx.compose.material.Shapes
+import androidx.compose.material.SliderColors
+import androidx.compose.material3.SliderDefaults
 import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material3.Button
@@ -42,6 +46,9 @@ import androidx.compose.material3.IconButtonDefaults.filledIconButtonColors
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Face
 import androidx.compose.material3.Button
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.ElevatedButton
+import androidx.compose.material3.ElevatedCard
 //import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Slider
@@ -73,6 +80,9 @@ import com.example.safecircle.Dashboard
 import com.example.safecircle.database.FamilyDatabase
 import com.example.safecircle.database.FamilyLocationDao
 import com.example.safecircle.ui.components.map.MapMarkerOverlay
+import com.example.safecircle.ui.theme.CyanSecondary
+import com.example.safecircle.ui.theme.DarkGreen
+import com.example.safecircle.ui.theme.PlaypenSansBold
 import com.example.safecircle.ui.theme.YellowPrimary
 import com.example.safecircle.utils.ErrorDialog
 import com.example.safecircle.utils.PreferenceHelper
@@ -245,6 +255,7 @@ fun MapsScreen(navController: NavController, username: String? = null) {
                 Circle(
                     center = enhancedMarkerState.markerState.position,
                     radius = enhancedMarkerState.properties.value.radius.toDouble(),
+                    strokeWidth = 4F,
                     fillColor = colors[enhancedMarkerState.properties.value.icon]
                 )
             }
@@ -264,44 +275,28 @@ fun MapsScreen(navController: NavController, username: String? = null) {
             // Find the EnhancedMarkerState corresponding to the selected MarkerState
             val selectedName = selectedEnhancedMarker?.properties?.value?.name ?: ""
             val selectedRadius = selectedEnhancedMarker?.properties?.value?.radius ?: 100f
-            Column(
+            ElevatedCard (
                 modifier = Modifier
-                    .align(Alignment.TopCenter)
-                    .padding(16.dp)
-                    .background(MaterialTheme.colors.surface.copy(alpha = 0.8f))
-                    .clip(RoundedCornerShape(topStart = 8.dp, topEnd = 8.dp))
-            ){
-                TextField(
-                    value = selectedName,
-                    onValueChange = { newName ->
-                        val updatedMarker = selectedEnhancedMarker?.copy(
-                            properties = mutableStateOf(
-                                selectedEnhancedMarker.properties.value.copy(name = newName)
-                            )
-                        )
-                        if (updatedMarker != null && selectedMarkerId.value != null) {
-                            markers.value = markers.value.toMutableMap().apply {
-                                this[selectedMarkerId.value!!] = updatedMarker
-                            }
-                        }
-                    },
-                    label = { Text("Marker Name") },
+                    .padding(horizontal = 15.dp, vertical = 10.dp)
+                    .fillMaxWidth()
+            ) {
+                Column(
                     modifier = Modifier
-                        .padding(8.dp)
-                        .fillMaxWidth()
+                        .padding(vertical = 10.dp, horizontal = 15.dp)
+                        .fillMaxWidth(),
+                    verticalArrangement = Arrangement.Center,
+                    horizontalAlignment = Alignment.CenterHorizontally
                 )
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(top = 8.dp),
-                    horizontalArrangement = Arrangement.Center
-                ) {
-                    icons.forEachIndexed { index, icon ->
-                        FilledIconButton(
-                            onClick = {
+                {
+                    ElevatedCard(
+                        colors = CardDefaults.cardColors()
+                    ){
+                        TextField(
+                            value = selectedName,
+                            onValueChange = { newName ->
                                 val updatedMarker = selectedEnhancedMarker?.copy(
                                     properties = mutableStateOf(
-                                        selectedEnhancedMarker.properties.value.copy(icon = index)
+                                        selectedEnhancedMarker.properties.value.copy(name = newName)
                                     )
                                 )
                                 if (updatedMarker != null && selectedMarkerId.value != null) {
@@ -310,96 +305,135 @@ fun MapsScreen(navController: NavController, username: String? = null) {
                                     }
                                 }
                             },
-                            enabled = (index !=  selectedEnhancedMarker.properties.value.icon),
-                            colors = filledIconButtonColors(
-                                containerColor = Color.LightGray,
-                                disabledContainerColor = YellowPrimary
-                            )
+                            label = { Text("Marker Name", fontFamily = PlaypenSansBold) },
+                            modifier = Modifier
+                                .padding(8.dp)
+                                .fillMaxWidth()
+                        )
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(top = 8.dp),
+                            horizontalArrangement = Arrangement.Center
                         ) {
-//                            val tint by animateColorAsState(if (iconIndex == index) Color(0xFFEC407A) else Color(0xFFB0BEC5))
-                            Icon(
-                                painter = icon,
-                                contentDescription = "Home Marker",
-                                tint = Color.Unspecified,
-                                modifier = Modifier.size(24.dp)
+                            icons.forEachIndexed { index, icon ->
+                                FilledIconButton(
+                                    onClick = {
+                                        val updatedMarker = selectedEnhancedMarker?.copy(
+                                            properties = mutableStateOf(
+                                                selectedEnhancedMarker.properties.value.copy(icon = index)
+                                            )
+                                        )
+                                        if (updatedMarker != null && selectedMarkerId.value != null) {
+                                            markers.value = markers.value.toMutableMap().apply {
+                                                this[selectedMarkerId.value!!] = updatedMarker
+                                            }
+                                        }
+                                    },
+                                    enabled = (index != selectedEnhancedMarker.properties.value.icon),
+                                    colors = filledIconButtonColors(
+                                        containerColor = Color.LightGray,
+                                        disabledContainerColor = YellowPrimary
+                                    )
+                                ) {
+                                    Icon(
+                                        painter = icon,
+                                        contentDescription = "Home Marker",
+                                        tint = Color.Unspecified,
+                                        modifier = Modifier.size(24.dp)
+                                    )
+                                }
+                            }
+                        }
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(top = 8.dp),
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            Slider(
+                                value = selectedRadius,
+                                colors = SliderDefaults.colors(
+                                    thumbColor = CyanSecondary,
+                                    activeTrackColor = CyanSecondary,
+                                    inactiveTrackColor = Color.LightGray
+                                ),
+                                onValueChange = { newValue ->
+                                    val updatedMarker = selectedEnhancedMarker?.copy(
+                                        properties = mutableStateOf(
+                                            selectedEnhancedMarker.properties.value.copy(radius = newValue)
+                                        )
+                                    )
+                                    if (updatedMarker != null && selectedMarkerId.value != null) {
+                                        markers.value = markers.value.toMutableMap().apply {
+                                            this[selectedMarkerId.value!!] = updatedMarker
+                                        }
+                                    }
+                                },
+                                valueRange = 30f..500f,
+                                modifier = Modifier
+                                    .width(260.dp)
+                            )
+                            Text(
+                                text = "${(selectedEnhancedMarker?.properties?.value?.radius ?: 100f).toInt()} M",
+                                fontFamily = PlaypenSansBold,
+                                modifier = Modifier
+                                    .padding(all = 8.dp)
+                                    .align(Alignment.CenterVertically)
                             )
                         }
                     }
                 }
                 Row(
                     modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(top = 8.dp),
-                    horizontalArrangement = Arrangement.SpaceBetween
-                ){
-                    Slider(
-                        value = selectedRadius,
-                        onValueChange = { newValue ->
-                            val updatedMarker = selectedEnhancedMarker?.copy(
-                                properties = mutableStateOf(
-                                    selectedEnhancedMarker.properties.value.copy(radius = newValue)
-                                )
-                            )
-                            if (updatedMarker != null && selectedMarkerId.value != null) {
-                                markers.value = markers.value.toMutableMap().apply {
-                                    this[selectedMarkerId.value!!] = updatedMarker
-                                }
-                            }
-                        },
-                        valueRange = 30f..500f,
-                        modifier = Modifier
-                            .padding(all = 16.dp)
-                            .width(240.dp)
-                    )
-                    Text(
-                        text = "${(selectedEnhancedMarker?.properties?.value?.radius ?: 100f).toInt()} meters",
-                        modifier = Modifier
-                            .padding(all = 8.dp)
-                            .align(Alignment.CenterVertically)
-                    )
-                }
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(top = 8.dp),
-                    horizontalArrangement = Arrangement.SpaceBetween
-                ){
-                    Button(
+                        .padding(all = 8.dp),
+                    horizontalArrangement = Arrangement.Start
+                ) {
+                    ElevatedButton(
                         // Delete marker for this child
                         onClick = {
-//                            markers.value = markers.value.remove(selectedMarkerId.value)
                             markers.value = markers.value.filter {
                                 it.key != selectedMarkerId.value
                             }
                             familyId?.let { famId ->
                                 username?.let { objId ->
-                                    familyLocationDao.pushMarkersToChild(famId, objId, markers.value)
+                                    familyLocationDao.pushMarkersToChild(
+                                        famId,
+                                        objId,
+                                        markers.value
+                                    )
                                 }
                             }
                             // Update the last marker state to current
                             updateLastKnownMarkers()
                             selectedMarkerId.value = null
                         },
-                        modifier = Modifier.padding(top = 8.dp)
+                        colors = ButtonDefaults.buttonColors(containerColor = YellowPrimary),
+                        modifier = Modifier.padding(all = 8.dp)
                     ) {
-                        Text(text = "Remove Marker")
+                        Text(text = "Remove Marker", fontFamily = PlaypenSansBold)
                     }
-                    Button(
+                    ElevatedButton(
                         // Save button activated when changes are uncommitted to firebase
                         enabled = hasMarkersChanged(),
                         // Save changes for markers
                         onClick = {
                             familyId?.let { famId ->
                                 username?.let { objId ->
-                                    familyLocationDao.pushMarkersToChild(famId, objId, markers.value)
+                                    familyLocationDao.pushMarkersToChild(
+                                        famId,
+                                        objId,
+                                        markers.value
+                                    )
                                 }
                             }
                             // Update the last marker state to current
                             updateLastKnownMarkers()
                         },
-                        modifier = Modifier.padding(top = 8.dp)
+                        colors = ButtonDefaults.buttonColors(containerColor = DarkGreen),
+                        modifier = Modifier.padding(all = 8.dp)
                     ) {
-                        Text(text = "Save")
+                        Text(text = "Save", fontFamily = PlaypenSansBold)
                     }
                 }
             }
