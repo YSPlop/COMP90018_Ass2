@@ -1,17 +1,18 @@
 package com.example.safecircle
 
 import android.Manifest
-import android.content.Intent
+import android.app.AlertDialog
 import android.app.NotificationChannel
 import android.app.NotificationManager
-import android.content.pm.PackageManager
+import android.content.Intent
+import android.net.Uri
 import android.os.Build
 import android.os.Bundle
+import android.provider.Settings
 import android.util.Log
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -20,7 +21,6 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
-import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -29,14 +29,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.core.content.ContextCompat
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.navigation.compose.rememberNavController
-import com.example.safecircle.sensors.ForegroundSensorService
-import com.example.safecircle.services.LocationPushService
 import com.example.safecircle.ui.theme.SafeCircleTheme
-import com.example.safecircle.utils.PreferenceHelper
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.PermissionStatus
 import com.google.accompanist.permissions.rememberMultiplePermissionsState
@@ -85,12 +81,25 @@ class MainActivity : ComponentActivity() {
                             if (!permissions.allPermissionsGranted and !askedPermission) {
                                 Log.d("PermissionRequest", "Asking for permissions")
                                 permissions.launchMultiplePermissionRequest()
-                                backgroundLocationPermissionState.launchPermissionRequest()
                                 askedPermission = true;
                             }
 
                             if (backgroundLocationPermissionState.status != PermissionStatus.Granted && !askedPermission) {
-                                backgroundLocationPermissionState.launchPermissionRequest()
+                                AlertDialog.Builder(context)
+                                    .setMessage(
+                                        "We need background location permission to share your " +
+                                                "realtime location with other family members. Click" +
+                                                "\"OK\" to enable it in System Settings"
+                                    ).setPositiveButton("OK") { dialog, _ ->
+                                        val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS)
+                                        intent.data =
+                                            Uri.fromParts("package", packageName, null)
+                                        startActivity(intent)
+                                        dialog.dismiss()
+                                    }.setNegativeButton("Cancel") {dialog, _ ->
+                                        dialog.dismiss()
+                                    }
+                                        .create().show()
                             }
 
                         }
