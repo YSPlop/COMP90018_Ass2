@@ -100,10 +100,9 @@ fun RegisterScreen(navController: NavHostController, viewModel: RegisterViewMode
                     OutlinedTextField(
                         value = familyID,
                         onValueChange = { familyID = it },
-//                        placeholder = { Text("Enter family ID") },
+                        placeholder = { Text("family ID") },
                         modifier = Modifier.fillMaxWidth(),
                         shape = RoundedCornerShape(24.dp),
-                        singleLine = true
                     )
                 }
                 // Username Row
@@ -116,7 +115,7 @@ fun RegisterScreen(navController: NavHostController, viewModel: RegisterViewMode
                     OutlinedTextField(
                         value = username,
                         onValueChange = { username = it },
-//                        placeholder = { Text("Enter username") },
+                        placeholder = { Text("username") },
                         modifier = Modifier.fillMaxWidth(),
                         shape = RoundedCornerShape(24.dp),
                         singleLine = true
@@ -133,7 +132,7 @@ fun RegisterScreen(navController: NavHostController, viewModel: RegisterViewMode
                     OutlinedTextField(
                         value = password,
                         onValueChange = { password = it },
-//                        placeholder = { Text("Enter password") },
+                        placeholder = { Text("password") },
                         visualTransformation = PasswordVisualTransformation(),
                         modifier = Modifier.fillMaxWidth(),
                         shape = RoundedCornerShape(24.dp),
@@ -152,7 +151,7 @@ fun RegisterScreen(navController: NavHostController, viewModel: RegisterViewMode
                                 showDialog = true
                             } else {
                                 viewModel.register(familyID, username, password)
-                                navController.navigate(Landing.route){
+                                navController.navigate(Login.route){
                                     popUpTo(navController.graph.startDestinationRoute!!) { inclusive = true }
                                 }
                             }
@@ -166,7 +165,7 @@ fun RegisterScreen(navController: NavHostController, viewModel: RegisterViewMode
                         contentColor = Color.Black
                     )
                 ) {
-                    Text(text = "Register", fontSize = 20.sp, fontWeight = FontWeight.Bold, fontFamily = PlaypenSansBold)
+                    Text(text = "Register", fontSize = 16.sp, fontWeight = FontWeight.Bold, fontFamily = PlaypenSansBold)
                 }
 
                 // Text to display the login as a option

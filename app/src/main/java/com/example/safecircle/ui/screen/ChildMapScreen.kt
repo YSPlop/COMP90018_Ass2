@@ -30,6 +30,7 @@ import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Face
+import androidx.compose.material.icons.filled.Send
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ElevatedButton
@@ -133,18 +134,45 @@ fun ChildMapScreen(navController: NavHostController) {
     }
 
     // start all sensors
-    LaunchedEffect(Unit) {
-        Log.i("Dashboard", "objectId: $objectID")
-        // Start ForegroundSensorService
-        if (!isServiceRunning(ForegroundSensorService::class.java)) {
-//            ForegroundSensorService.getInstance()?.setUser(familyID.toString(), username.toString(), Role.PARENT)
-            val serviceIntent = Intent(context, ForegroundSensorService::class.java)
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                context.startForegroundService(serviceIntent)
-            } else {
-                context.startService(serviceIntent)
-            }
+//    LaunchedEffect(Unit) {
+//        Log.i("Dashboard", "objectId: $objectID")
+//        // Start ForegroundSensorService
+//        if (!isServiceRunning(ForegroundSensorService::class.java)) {
+////            ForegroundSensorService.getInstance()?.setUser(familyID.toString(), username.toString(), Role.PARENT)
+//            val serviceIntent = Intent(context, ForegroundSensorService::class.java)
+//            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+//                context.startForegroundService(serviceIntent)
+//            } else {
+//                context.startService(serviceIntent)
+//            }
+//        }
+//    }
+
+    fun startForegroundService(context: Context) {
+        val serviceIntent = Intent(context, ForegroundSensorService::class.java)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            context.startForegroundService(serviceIntent)
+        } else {
+            context.startService(serviceIntent)
         }
+    }
+    LaunchedEffect(Unit) {
+        // Start ForegroundSensorService
+        Log.i("Dashboard", "objectId: $objectID")
+        val lastObjectID = preferenceHelper.getLastObjectID()
+
+        if (!isServiceRunning(ForegroundSensorService::class.java)) {
+            // If service isn't running, start it
+            startForegroundService(context)
+        } else if (objectID != lastObjectID) {
+            // If service is running and objectId has changed, stop and then start it
+            val stopIntent = Intent(context, ForegroundSensorService::class.java)
+            context.stopService(stopIntent)
+            startForegroundService(context)
+        }
+
+        // Store the current objectId as lastObjectID
+        preferenceHelper.setLastObjectID(objectID.toString())
     }
 
     val viewModel = viewModel<MapViewModel>(
@@ -335,7 +363,7 @@ fun helpPage(
             textMessageToSend = textMessageToSend,
             context = context
         )
-        openDialer(emergencyContactNumber, emergencyContactName, context)
+        openDialer(emergencyContactNumber, "PARENT", context)
 
     }
 
@@ -447,6 +475,7 @@ fun messageButton(
             if (newResult) {
                 Log.i("SMS", "permissions are working")
                 sendTextMessage1(context, emergencyContactNumber, textMessageToSend, activity)
+                Toast.makeText(context, "Emergency message has been sent to parent", Toast.LENGTH_SHORT).show()
             }
 
         },
@@ -455,12 +484,12 @@ fun messageButton(
             contentColor = Color.White
         ),
         modifier = Modifier
-            .padding(horizontal = 8.dp)
+            .padding(horizontal = 4.dp)
     ) {
-        androidx.compose.material3.Text(
-            text = "Send Text",
-            color = Color.Black,
-            fontFamily = PlaypenSansBold
+        Icon(
+            imageVector = Icons.Default.Send, // Replace with your desired icon
+            contentDescription = "Send", // Accessibility description for the icon
+            tint = Color.Black
         )
     }
 
