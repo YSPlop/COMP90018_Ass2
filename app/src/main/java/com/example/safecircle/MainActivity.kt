@@ -1,11 +1,14 @@
 package com.example.safecircle
 
+import android.Manifest
 import android.content.Intent
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
+import android.util.Log
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
@@ -16,15 +19,28 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.SideEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.core.content.ContextCompat
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
 import androidx.navigation.compose.rememberNavController
 import com.example.safecircle.sensors.ForegroundSensorService
 import com.example.safecircle.services.LocationPushService
 import com.example.safecircle.ui.theme.SafeCircleTheme
 import com.example.safecircle.utils.PreferenceHelper
+import com.google.accompanist.permissions.ExperimentalPermissionsApi
+import com.google.accompanist.permissions.PermissionStatus
+import com.google.accompanist.permissions.rememberMultiplePermissionsState
+import com.google.accompanist.permissions.rememberPermissionState
 
 
 class MainActivity : ComponentActivity() {
@@ -33,6 +49,7 @@ class MainActivity : ComponentActivity() {
 //            ForegroundSensorService.getInstance()?.startNoiseSensor()
 //        }
 
+    @OptIn(ExperimentalPermissionsApi::class)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         // Notification Channel
@@ -46,42 +63,61 @@ class MainActivity : ComponentActivity() {
             manager.createNotificationChannel(channel)
         }
 
-        val requestPermissionLauncher =
-            registerForActivityResult(
-                ActivityResultContracts.RequestPermission()
-            ) { isGranted: Boolean ->
-                if (isGranted) {
-                    // Permission is granted. Continue the action or workflow in your
-                    // app.
-                } else {
-                    // Explain to the user that the feature is unavailable because the
-                    // feature requires a permission that the user has denied. At the
-                    // same time, respect the user's decision. Don't link to system
-                    // settings in an effort to convince the user to change their
-                    // decision.
+        setContent {
+            val permissions = rememberMultiplePermissionsState(permissions = listOf(
+                Manifest.permission.SEND_SMS,
+                Manifest.permission.INTERNET,
+                Manifest.permission.ACCESS_COARSE_LOCATION,
+                Manifest.permission.ACCESS_FINE_LOCATION,
+                Manifest.permission.POST_NOTIFICATIONS,
+                Manifest.permission.RECORD_AUDIO,
+            ))
+            val backgroundLocationPermissionState = rememberPermissionState(Manifest.permission.ACCESS_BACKGROUND_LOCATION);
+            var askedPermission by remember {
+                mutableStateOf(false)
+            }
+            val context = this;
+            val lifecycleOwner = LocalLifecycleOwner.current
+            DisposableEffect(lifecycleOwner) {
+                val observer = LifecycleEventObserver { source, event ->
+                    when(event) {
+                        Lifecycle.Event.ON_START -> {
+                            if (!permissions.allPermissionsGranted and !askedPermission) {
+                                Log.d("PermissionRequest", "Asking for permissions")
+                                permissions.launchMultiplePermissionRequest()
+                                backgroundLocationPermissionState.launchPermissionRequest()
+                                askedPermission = true;
+                            }
+
+                            if (backgroundLocationPermissionState.status != PermissionStatus.Granted && !askedPermission) {
+                                backgroundLocationPermissionState.launchPermissionRequest()
+                            }
+
+                        }
+                        else -> {}
+                    }
+                }
+                lifecycleOwner.lifecycle.addObserver(observer)
+                onDispose {
+                    lifecycleOwner.lifecycle.removeObserver(observer)
                 }
             }
-
-
-//        val serviceIntent = Intent(this, ForegroundSensorService::class.java)
-//        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-//            startForegroundService(serviceIntent)
-//        } else {
-//            startService(serviceIntent)
-//        }
-
-        // Check permission and start noise detection sensor.
-//        if (ContextCompat.checkSelfPermission(
-//                this,
-//                android.Manifest.permission.RECORD_AUDIO
-//            ) != PackageManager.PERMISSION_GRANTED
-//        ) {
-//            requestRecordAudioPermissionLauncher.launch(android.Manifest.permission.RECORD_AUDIO);
-//        } else {
-//            ForegroundSensorService.getInstance()?.startNoiseSensor()
-//        }
-
-        setContent {
+            if (!permissions.allPermissionsGranted && askedPermission) {
+                Toast.makeText(
+                    context,
+                    "We don't have all permissions, please approve them in settings",
+                    Toast.LENGTH_SHORT
+                )
+                    .show()
+                Log.d("PermissionsRequest", "revoked Permissions: ${permissions.revokedPermissions}")
+            }
+            if (backgroundLocationPermissionState.status == PermissionStatus.Granted && askedPermission) {
+                Toast.makeText(
+                    context,
+                    "We need background location permission to show your kids' location",
+                    Toast.LENGTH_SHORT)
+                    .show()
+            }
             SafeCircleTheme {
                 // A surface container using the 'background' color from the theme
                 Surface(
