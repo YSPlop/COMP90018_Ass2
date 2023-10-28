@@ -21,6 +21,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import com.example.safecircle.Login
+import com.example.safecircle.Settings
 import com.example.safecircle.database.Child
 import com.example.safecircle.database.FamilyDatabase
 import com.example.safecircle.database.Parent
@@ -182,8 +183,10 @@ fun SettingsScreen(navController: NavHostController) {
                             onClick = { isParentAccount.value = true },
                             enabled = !isParentAccount.value,
                             colors = ButtonDefaults.buttonColors(
-                                containerColor = CyanSecondary,
-                                contentColor = Color.White
+                                disabledContainerColor = CyanSecondary,
+                                containerColor = Color.LightGray,
+                                contentColor = Color.Gray,
+                                disabledContentColor = Color.White
                             )
                         ) {
                             Text(text = "Parent", fontFamily = PlaypenSansBold)
@@ -193,8 +196,10 @@ fun SettingsScreen(navController: NavHostController) {
                             onClick = { isParentAccount.value = false },
                             enabled = isParentAccount.value,
                             colors = ButtonDefaults.buttonColors(
-                                containerColor = CyanSecondary,
-                                contentColor = Color.White
+                                disabledContainerColor = CyanSecondary,
+                                containerColor = Color.LightGray,
+                                contentColor = Color.Gray,
+                                disabledContentColor = Color.White
                             )
                         ) {
                             Text(text = "Child", fontFamily = PlaypenSansBold)
@@ -290,7 +295,7 @@ fun SettingsScreen(navController: NavHostController) {
                                 contentColor = Color.White
                             )
                         ) {
-                            Text(text = "Create Account")
+                            Text(text = "Create Account", fontFamily = PlaypenSansBold)
                         }
                     }
                 }}
@@ -298,7 +303,9 @@ fun SettingsScreen(navController: NavHostController) {
                 Spacer(modifier = Modifier.height(8.dp))
 
                 Button(onClick = {
-                    navController.navigate(Login.route)
+                    navController.navigate(Login.route){
+                        popUpTo(navController.graph.startDestinationRoute!!) { inclusive = true }
+                    }
                     preferenceHelper.clearPreferences()
                 },
                     colors = ButtonDefaults.buttonColors(

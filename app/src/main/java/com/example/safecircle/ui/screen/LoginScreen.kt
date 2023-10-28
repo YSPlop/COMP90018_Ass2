@@ -39,6 +39,7 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import com.example.safecircle.ChildMap
 import com.example.safecircle.Dashboard
+import com.example.safecircle.Login
 import com.example.safecircle.database.FamilyDatabase
 import com.example.safecircle.Register
 import com.example.safecircle.ui.theme.CyanSecondary
@@ -95,7 +96,7 @@ fun LoginScreen(navController: NavHostController, viewModel: LoginViewModel) {
                         modifier = Modifier.size(32.dp) // Setting a specific size for the radio button
                     )
                     Spacer(modifier = Modifier.width(24.dp))
-                    Text(text = "Kid", fontSize = 20.sp, fontWeight = FontWeight.Bold, color = CyanSecondary, fontFamily = PlaypenSansBold) // Increased font size for consistency
+                    Text(text = "Child", fontSize = 20.sp, fontWeight = FontWeight.Bold, color = CyanSecondary, fontFamily = PlaypenSansBold) // Increased font size for consistency
                     RadioButton(
                         selected = loginType == "kid",
                         onClick = { loginType = "kid" },
@@ -113,7 +114,7 @@ fun LoginScreen(navController: NavHostController, viewModel: LoginViewModel) {
                         OutlinedTextField(
                             value = familyID,
                             onValueChange = { familyID = it },
-                            placeholder = { Text("Enter family ID") },
+//                            placeholder = { Text("Enter family ID") },
                             modifier = Modifier.fillMaxWidth(),
                             shape = RoundedCornerShape(24.dp),
                             singleLine = true
@@ -129,7 +130,7 @@ fun LoginScreen(navController: NavHostController, viewModel: LoginViewModel) {
                         OutlinedTextField(
                             value = username,
                             onValueChange = { username = it },
-                            placeholder = { Text("Enter username") },
+//                            placeholder = { Text("Enter username") },
                             modifier = Modifier.fillMaxWidth(),
                             shape = RoundedCornerShape(24.dp),
                             singleLine = true
@@ -146,7 +147,7 @@ fun LoginScreen(navController: NavHostController, viewModel: LoginViewModel) {
                         OutlinedTextField(
                             value = password,
                             onValueChange = { password = it },
-                            placeholder = { Text("Enter password") },
+//                            placeholder = { Text("Enter password") },
                             visualTransformation = PasswordVisualTransformation(),
                             modifier = Modifier.fillMaxWidth(),
                             shape = RoundedCornerShape(24.dp),
@@ -164,7 +165,7 @@ fun LoginScreen(navController: NavHostController, viewModel: LoginViewModel) {
                         OutlinedTextField(
                             value = familyID,
                             onValueChange = { familyID = it },
-                            placeholder = { Text("Enter family ID") },
+//                            placeholder = { Text("Enter family ID") },
                             modifier = Modifier.fillMaxWidth(),
                             shape = RoundedCornerShape(24.dp),
                             singleLine = true
@@ -181,7 +182,7 @@ fun LoginScreen(navController: NavHostController, viewModel: LoginViewModel) {
                         OutlinedTextField(
                             value = code,
                             onValueChange = { code = it },
-                            placeholder = { Text("Enter code") },
+//                            placeholder = { Text("Enter code") },
                             modifier = Modifier.fillMaxWidth(),
                             shape = RoundedCornerShape(24.dp),
                             singleLine = true
@@ -208,7 +209,9 @@ fun LoginScreen(navController: NavHostController, viewModel: LoginViewModel) {
                                         if (successfulLogin) {
                                             Log.i("test", "Parent login")
 
-                                            navController.navigate(Dashboard.route)
+                                            navController.navigate(Dashboard.route){
+                                                popUpTo(navController.graph.startDestinationRoute!!) { inclusive = true }
+                                            }
                                         } else {
                                             errorMessage = message.toString()
                                             showErrorDialog = true
@@ -217,7 +220,9 @@ fun LoginScreen(navController: NavHostController, viewModel: LoginViewModel) {
                                 } else if (loginType == "kid") {
                                     viewModel.loginAsKid(familyID, code) { successfulLogin, message ->
                                         if (successfulLogin) {
-                                            navController.navigate(ChildMap.route)
+                                            navController.navigate(ChildMap.route){
+                                                popUpTo(navController.graph.startDestinationRoute!!) { inclusive = true }
+                                            }
                                         } else {
                                             errorMessage = message.toString()
                                             showErrorDialog = true
@@ -238,7 +243,7 @@ fun LoginScreen(navController: NavHostController, viewModel: LoginViewModel) {
                         contentColor = Color.Black
                     )
                 ) {
-                    Text(text = "Login", fontSize = 24.sp, fontWeight = FontWeight.Bold, fontFamily = PlaypenSansBold)
+                    Text(text = "Login", fontSize = 20.sp, fontWeight = FontWeight.Bold, fontFamily = PlaypenSansBold)
                 }
                 // Text to display the register as an option
                 RegisterText(navController);
