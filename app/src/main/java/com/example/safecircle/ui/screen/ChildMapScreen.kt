@@ -241,6 +241,7 @@ fun ChildMapScreen(navController: NavHostController) {
                     Circle(
                         center = enhancedMarkerState.markerState.position,
                         radius = enhancedMarkerState.properties.value.radius.toDouble(),
+                        strokeWidth = 4F,
                         fillColor = colors[enhancedMarkerState.properties.value.icon]
                     )
                 }
