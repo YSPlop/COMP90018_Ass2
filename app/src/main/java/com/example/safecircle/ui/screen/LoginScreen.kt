@@ -114,7 +114,7 @@ fun LoginScreen(navController: NavHostController, viewModel: LoginViewModel) {
                         OutlinedTextField(
                             value = familyID,
                             onValueChange = { familyID = it },
-//                            placeholder = { Text("Enter family ID") },
+                            placeholder = { Text("family ID") },
                             modifier = Modifier.fillMaxWidth(),
                             shape = RoundedCornerShape(24.dp),
                             singleLine = true
@@ -130,7 +130,7 @@ fun LoginScreen(navController: NavHostController, viewModel: LoginViewModel) {
                         OutlinedTextField(
                             value = username,
                             onValueChange = { username = it },
-//                            placeholder = { Text("Enter username") },
+                            placeholder = { Text("username") },
                             modifier = Modifier.fillMaxWidth(),
                             shape = RoundedCornerShape(24.dp),
                             singleLine = true
@@ -147,7 +147,7 @@ fun LoginScreen(navController: NavHostController, viewModel: LoginViewModel) {
                         OutlinedTextField(
                             value = password,
                             onValueChange = { password = it },
-//                            placeholder = { Text("Enter password") },
+                            placeholder = { Text("password") },
                             visualTransformation = PasswordVisualTransformation(),
                             modifier = Modifier.fillMaxWidth(),
                             shape = RoundedCornerShape(24.dp),
@@ -165,7 +165,7 @@ fun LoginScreen(navController: NavHostController, viewModel: LoginViewModel) {
                         OutlinedTextField(
                             value = familyID,
                             onValueChange = { familyID = it },
-//                            placeholder = { Text("Enter family ID") },
+                            placeholder = { Text("family ID") },
                             modifier = Modifier.fillMaxWidth(),
                             shape = RoundedCornerShape(24.dp),
                             singleLine = true
@@ -182,7 +182,7 @@ fun LoginScreen(navController: NavHostController, viewModel: LoginViewModel) {
                         OutlinedTextField(
                             value = code,
                             onValueChange = { code = it },
-//                            placeholder = { Text("Enter code") },
+                            placeholder = { Text("code") },
                             modifier = Modifier.fillMaxWidth(),
                             shape = RoundedCornerShape(24.dp),
                             singleLine = true
@@ -243,7 +243,7 @@ fun LoginScreen(navController: NavHostController, viewModel: LoginViewModel) {
                         contentColor = Color.Black
                     )
                 ) {
-                    Text(text = "Login", fontSize = 20.sp, fontWeight = FontWeight.Bold, fontFamily = PlaypenSansBold)
+                    Text(text = "Login", fontSize = 16.sp, fontWeight = FontWeight.Bold, fontFamily = PlaypenSansBold)
                 }
                 // Text to display the register as an option
                 RegisterText(navController);
