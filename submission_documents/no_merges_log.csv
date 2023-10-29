@@ -1,0 +1,115 @@
+c3e8194,Yukash Sivaraj,22 minutes ago,Update README.md
+ec7c513,Alex Zhang,13 hours ago,feat: added dialog to request background location permissions
+d48de9b,Luchen2001,24 hours ago,fix: navigation and call button bugs (#27)
+54ef10c,Luchen2001,24 hours ago,bugfixed
+72d394d,Alex Zhang,27 hours ago,fix: add permission request
+0856226,YifanCheng,27 hours ago,bugfix: UI fix and android back button fix
+29f69f3,Yukash Sivaraj,28 hours ago,Update README.md
+2da7835,Yukash Sivaraj,28 hours ago,Update README.md
+ad8a4d3,Yukash Sivaraj,28 hours ago,index on feature/TextbuttonFeature: 2dc583a Messaging function complete but clashes with current code
+e72bbb3,YifanCheng,29 hours ago,bugfix: childmapscreen circle stroke width adjustment
+45a73c2,YifanCheng-unimelb,2 days ago,Visual improvement to marker edit panel (#25)
+a4eec72,YifanCheng,2 days ago,Visual improvement to marker edit panel
+60af484,Alex Zhang,4 days ago,fix: fixed ChildMapScreen
+06abebb,Alex Zhang,5 days ago,fix: Hopefully map update is fixed
+94c2169,YifanCheng-unimelb,5 days ago,Marker changes trigger rerender for child (#24)
+2084693,YifanCheng,5 days ago,Marker changes trigger rerender for child
+ec551b8,YifanCheng,5 days ago,Bugfix material icon overload
+1d25acc,YifanCheng-unimelb,5 days ago,feature/Custom marker icon & circle color (#23)
+b440b41,YifanCheng,5 days ago,Custom marker icon & circle color
+40b7282,Luchen2001,5 days ago,fix: moved call message button to the child map
+8c4b1a4,Luchen2001,5 days ago,bugfix: remove help page from navigation
+46ef439,Luchen2001,5 days ago,feature UI refinemennt completed (#22)
+9292ac5,Luchen2001,5 days ago,feature UI refinemennt completed
+e6ea6e9,Alex Zhang,5 days ago,fix: fixed issues caused by async location update
+1e99998,YifanCheng-unimelb,6 days ago,Feature/location check/yifan (#20)
+adfb14e,YifanCheng,6 days ago,Bugfix Removed isInside
+eb75b0d,YifanCheng,6 days ago,Child location check
+a884cde,YifanCheng,11 days ago,Merge conflict bugfix
+754277c,YifanCheng-unimelb,11 days ago,Fix/marker edit window/yifan (#19)
+c898f8a,YifanCheng,11 days ago,Map marker edit table update
+37818d8,Yifan Cheng,11 days ago,Camera update bugfix
+e4d396b,Luchen2001,12 days ago,feature: sensor monitor/sichen (#17)
+8c234b0,Luchen2001,12 days ago,code: terminate the old SensorDataManager when foreground restart
+2a6e1a0,YifanCheng,12 days ago,Functionality separation for child and parent
+58efcea,Luchen2001,12 days ago,code: added data pull service for parent
+10a08dc,NoiR_CCC,13 days ago,Added children battery and temperature value listening for parent
+2d1c1a0,NoiR_CCC,13 days ago,Added temperature and noise sensor value threshold detection
+00fa238,Luchen2001,13 days ago,Feature: textbutton feature (#15)
+18519a6,Luchen2001,13 days ago,code: moved text button to child
+66c9bd5,Luchen2001,13 days ago,Feature: dashboard/refine yukash (#14)
+2dc583a,Yukash Sivaraj,2 weeks ago,Messaging function complete but clashes with current code
+b41ac43,Yukash Sivaraj,3 weeks ago,Ui change
+2b2a176,Yukash Sivaraj,3 weeks ago,Message button function
+3d34bee,Alex Zhang,3 weeks ago,fix: fixed issues that stops camera updating
+f793352,YifanCheng,3 weeks ago,Bugfix for database update
+80fbf1c,YifanCheng,3 weeks ago,Bugfix for map integration
+133a9fb,YifanCheng,3 weeks ago,Attempt to integrate
+60da03a,Wei Wang,3 weeks ago,Check child code if exist under family id
+f9eb0ac,Wei Wang,3 weeks ago,update check username
+3e88d85,Yifan Cheng,3 weeks ago,Bugfix: Remove merge conflict
+ddd2073,YifanCheng-unimelb,3 weeks ago,feature: child map/yifan (#13)
+c96576e,Yukash,3 weeks ago,Making name font larger
+ad3f842,Yukash,3 weeks ago,comments for future improvement
+774e639,Yukash,3 weeks ago,Centering text,
+0d91ef1,Yukash,3 weeks ago,UI Refinement
+57bf4c0,YifanCheng,3 weeks ago,Connect marker operations to Firebase
+dda825b,Yifan Cheng,3 weeks ago,Read and Write list of markers to firebase
+3bd2b10,YifanCheng,3 weeks ago,Change data structure to hashmap
+8607da6,Luchen2001,3 weeks ago,fix: map nav completed (#12)
+3fd7756,Luchen2001,3 weeks ago,child map nav fix completed
+85be18d,Alex Zhang,3 weeks ago,feat: integrated with dashboard
+60d2814,Luchen2001,3 weeks ago,feature: help page complete (#11)
+90844ab,Yukash Sivaraj,3 weeks ago,final changes
+977d8dc,Luchen2001,3 weeks ago,feature: map dashboard integration/luchen (#10)
+5254112,Luchen2001,3 weeks ago,feature: map-dashboard Intergration complete
+6ec00ce,Yukash,3 weeks ago,Changing title to the correct title
+ae613f3,Luchen2001,3 weeks ago,feature: map-maker/alex (#8)
+c6461e3,Yukash,4 weeks ago,Adding text to parent view
+d0cd7eb,Alex Zhang,4 weeks ago,feat: Updated marker style
+1acf3b5,Yukash,4 weeks ago,Logic for help page complete!
+04b9801,Yukash,4 weeks ago,AboutScreen Page Mechanisms Complete
+fa43217,Alex Zhang,4 weeks ago,feat: Display markers on the map
+873fef7,Yifan Cheng,4 weeks ago,Marker placement and location detection
+32fcbe9,NoiR_CCC,4 weeks ago,Added real-time children status for parent dashboard
+de54d1a,NoiR_CCC,4 weeks ago,Added sensor data posting
+b795e4a,Wei Wang,4 weeks ago,dashboard draft
+f27b365,NoiR_CCC,4 weeks ago,Exposed noise sensor instance
+bb9886b,NoiR_CCC,4 weeks ago,Updated permission logic, added foreground service singleton
+7aa89a8,NoiR_CCC,4 weeks ago,Add basic permission request
+a463dad,Yukash Sivaraj,5 weeks ago,Improving about and home page
+dacad30,Yukash Sivaraj,5 weeks ago,A basic calling function has been implemented
+35a1535,Yukash Sivaraj,5 weeks ago,about us page and help page
+2712070,Yukash,5 weeks ago,Initial attempt
+9f7417f,Luchen2001,5 weeks ago,bugfix: import error fixed
+808b94d,Luchen2001,5 weeks ago,feature landing-flow complete (#7)
+e86db10,Luchen2001,5 weeks ago,feature landing-flow complete
+296df4d,Luchen2001,5 weeks ago,bugfix: fixed merge error from login screen
+e40a835,Luchen2001,5 weeks ago,feature/login/wei complete (#6)
+19e1b15,Luchen2001,5 weeks ago,login page complete
+aad883f,Wei Wang,5 weeks ago,Update LoginScreen.kt
+76d56af,Wei Wang,5 weeks ago,Revert "Login screen"
+4998a87,Wei Wang,5 weeks ago,Revert "Revert "Login screen""
+e71f927,Wei Wang,5 weeks ago,Revert "Login screen"
+b0492f3,Wei Wang,5 weeks ago,Login screen
+1a8ece4,Yifan Cheng,5 weeks ago,Battery Sensor notification update
+958f8f4,Yifan Cheng,5 weeks ago,Battery sensor
+54bb58e,Yifan Cheng,5 weeks ago,Revert "Revert "Merge branch 'feature/child-acct-creation/luchen' into feature/phone-call/yifan""
+8f49c2c,Yifan Cheng,5 weeks ago,Revert "Merge branch 'feature/child-acct-creation/luchen' into feature/phone-call/yifan"
+3a26a85,NoiR_CCC,5 weeks ago,Added noise detection service and audio record permission management
+a371ca1,Alex Zhang,6 weeks ago,fix: Added notification permission
+be9face,Luchen2001,6 weeks ago,bugfix: start foreground service by api version
+6740985,Luchen2001,6 weeks ago,feature: child account creation complete (#3)
+9c4464d,Luchen2001,6 weeks ago,feature: child account creation complete
+548bdf2,Luchen2001,6 weeks ago,Feature: tempsenor/yukash complete (#2)
+ff3c0d6,Luchen2001,6 weeks ago,feature temperture sensor prototype complete
+222025e,Alex Zhang,6 weeks ago,feat(location): added initial data pulling
+df57e22,Alex Zhang,6 weeks ago,feat(location): added real time location sharing
+187cc1f,Yukash Sivaraj,7 weeks ago,added route to sensor screen in Navigation Composable.kt
+dd99611,Yukash Sivaraj,7 weeks ago,changes done
+fec7ba5,Alex Zhang,7 weeks ago,feat: added google map
+ee1935f,YifanCheng,7 weeks ago,Phone call and Battery sensor
+dbe3687,Luchen2001,7 weeks ago,feature/register-database/luchen finished
+f83b973,Luchen2001,7 weeks ago,feature/1.1/Luchen
+7045458,Yukash,7 weeks ago,schema
+c8e5c9e,Yukash Sivaraj,3 months ago,Initial commit

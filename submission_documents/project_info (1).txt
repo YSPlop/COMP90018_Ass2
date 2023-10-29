@@ -1,0 +1,39 @@
+################################################################################                     
+                    COMP90018 Programming Project Submission
+################################################################################
+
+Group No: 31
+
+Group Members:
+
+1: [YSPlop, ysivaraj@student.unimelb.edu.au] 
+2: [Chi Zhang, czzhang5@student.unimelb.edu.au] 
+3: [Yifan Cheng	, yifacheng@student.unimelb.edu.au] 
+4: [Luchen Zhou	, luczhou@student.unimelb.edu.au] 
+5: [Wei Wang, wangw16@student.unimelb.edu.au]
+6: [Sichen Lu, sichen2@student.unimelb.edu.au]
+
+YouTube Link: https://www.youtube.com/watch?v=xl8y1NZawe8
+
+
+Publicity statement: We authorise the University of Melbourne to use material from our submission for publicity.
+
+README:
+
+Pre-conditions for the app to run:
+
+- In the github repository we have git ignored a file named google-service.json due to privacy reasons, this file will be included as part of the zip file. If you would like to include the file please include it in the folder named app, present in the root directory
+
+- use emulator with google play
+
+- Make sure you have you have android studio and it is up to date
+
+- Download an android emulator with android version 31 installed
+
+How to run
+
+1. Make sure all pre-requisite's from above are complete
+2. Extract Zip file if you haven't already
+3. Import extracted folder into Android Studio
+4. Launch android emulator
+5. Hit run.
