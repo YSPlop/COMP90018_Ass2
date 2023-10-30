@@ -25,7 +25,9 @@ Tutorial 12 - Group 01
 
 - Make sure you have you have android studio and it is up to date
 
-- Download an android emulator with android version 31 installed
+- Download an android emulator 
+    - with android version 31 installed
+    - google play compatible
 
 ## How to run
 
