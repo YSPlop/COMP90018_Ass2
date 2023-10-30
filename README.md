@@ -20,6 +20,7 @@ Tutorial 12 - Group 01
 ## Pre-conditions for the app to run
 
 - In the github repository we have git ignored a file named ```google-service.json``` due to privacy reasons, this file will be included as part of the zip file. If you would like to include the file please include it in the folder named ```app```, present in the root directory
+    - In addition to this, please make sure the ```GOOGLE_MAPS_API_KEY``` is set in ```local.properties``` which is also present in the root folder (This information will be preset in the zip submitted)
 
 - use emulator with google play
 
