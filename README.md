@@ -10,8 +10,8 @@ Tutorial 12 - Group 01
 
 |Name|Preferred Name|StudentID|email|github|
 |:----|:----|:----|:----|:----|
-|Yukash Sivaraj| N/A|1054297|<ysivaraj@student.unimelb.edu.au>|YSPlop|
-|Chi Zhang|Alex|1431563|<czzhang5@student.unimelb.edu.au>|zhangchi0104|
+|Yukash Sivaraj| Yukash |1054297|<ysivaraj@student.unimelb.edu.au>|YSPlop|
+|Chi Zhang|Alex Zhang|1431563|<czzhang5@student.unimelb.edu.au>|zhangchi0104|
 |Yifan Cheng|Eric|1081430|<yifacheng@student.unimelb.edu.au>|YifanCheng-unimelb|
 |Luchen Zhou|Louis|1053412|<luczhou@student.unimelb.edu.au>|Luchen2001|
 |Wei Wang| N/A |900889|<wangw16@student.unimelb.edu.au>|cutieww|
