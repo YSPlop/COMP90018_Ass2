@@ -28,8 +28,9 @@ Pre-conditions for the app to run:
 
 - Make sure you have you have android studio and it is up to date
 
-- Download an android emulator with android version 31 installed
-
+- Download an android emulator 
+	- with android version 31 installed
+	- which is google play compatible
 How to run
 
 1. Make sure all pre-requisite's from above are complete
